@@ -19,6 +19,18 @@
 
 #include "lsm303dlh.h"
 #include "l3g4200d.h"
+#include "math.h"
+
+#include "myusb.h"
+
+#include "chprintf.h"
+
+/*
+* DP resistor control is not possible on the STM32F3-Discovery, using stubs
+* for the connection macros.
+*/
+#define usb_lld_connect_bus(usbp)
+#define usb_lld_disconnect_bus(usbp)
 
 int main(void) {
 
@@ -33,6 +45,23 @@ int main(void) {
 	lsm303dlh_init();
 	palClearPad(GPIOE, GPIOE_LED3_RED);
 
+	/*
+	* Initializes a serial-over-USB CDC driver.
+	*/
+	sduObjectInit(&SDU1);
+	sduStart(&SDU1, &serusbcfg);
+
+	/*
+	* Activates the USB driver and then the USB bus pull-up on D+.
+	* Note, a delay is inserted in order to not have to disconnect the cable
+	* after a reset.
+	*/
+	usbDisconnectBus(SDU1);
+	chThdSleepMilliseconds(1500);
+	usbStart(serusbcfg.usbp, &usbcfg);
+	usbConnectBus(SDU1);
+
+
 	int16_t gyroscope[3];
 	int16_t accerometer[3];
 	int16_t magnetometer[3];
@@ -42,8 +71,10 @@ int main(void) {
 		read_acceleration(accerometer);//range:
 		read_magetometer(magnetometer);//range: -2048 2047, -4096 = overflow
 
-		uint32_t distAcceSquared =  accerometer[0]*accerometer[0]+accerometer[1]*accerometer[1]+accerometer[2]*accerometer[2];
+		uint32_t distAcceSquared =  sqrt(accerometer[0]*accerometer[0]+accerometer[1]*accerometer[1]+accerometer[2]*accerometer[2]);
 		uint32_t distMagneSquared =  magnetometer[0]*magnetometer[0]+magnetometer[1]*magnetometer[1]+magnetometer[2]*magnetometer[2];
+
+		chprintf((BaseSequentialStream *)&SDU1, "letti: %d, %d\n", distAcceSquared, distMagneSquared);
 
 		palSetPad(GPIOE, GPIOE_LED3_RED);
 		chThdSleepMilliseconds(50);palClearPad(GPIOE, GPIOE_LED3_RED);

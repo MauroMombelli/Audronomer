@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O0 -g3 -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -O0 -g3 -ggdb -fomit-frame-pointer -falign-functions=16 -lm
 endif
 
 # C specific options here (added to USE_OPT).
@@ -89,6 +89,7 @@ CSRC = $(PORTSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(DRIVERSRC) \
+       $(CHIBIOS)/os/various/chprintf.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
