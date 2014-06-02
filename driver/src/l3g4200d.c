@@ -18,17 +18,33 @@ static const SPIConfig spi1cfg = {
 };
 
 msg_t l3g4200d_init(void) {
-	char txbuf[2] = { 0x20, 0xbF };
-	char rxbuf[2];
+	uint8_t txbuf[2];
 
 	spiAcquireBus(&SPID1);
 	spiStart(&SPID1, &spi1cfg);
 	spiSelect(&SPID1);
 
-	spiExchange(&SPID1, 2, txbuf, rxbuf);
-	txbuf[0] = 0xc0 | 0x20;
-	txbuf[1] = 0xFF;
-	spiExchange(&SPID1, 2, txbuf, rxbuf);
+	txbuf[0] = 0x20;
+	txbuf[1] = 0b11110111;
+	spiSend(&SPID1, 2, txbuf);//write
+
+	txbuf[0] = 0x22;
+	txbuf[1] = 0b00001000; //enable int2_dataready
+	spiSend(&SPID1, 2, txbuf);
+
+	spiUnselect(&SPID1);
+
+	spiSelect(&SPID1);
+	uint8_t rxbuf[5];
+
+	txbuf[0] = 0x0F|0xc0; //WHOAMI
+	txbuf[1] = 0xff;
+	spiExchange(&SPID1, 2, txbuf, rxbuf);//read
+
+	uint8_t chrxbuf[5] = {0x20|0xc0, 0xff, 0xff, 0xff, 0xff};
+
+
+	spiExchange(&SPID1, 5, chrxbuf, rxbuf);//read
 
 	spiUnselect(&SPID1);
 	spiStop(&SPID1);
