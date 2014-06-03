@@ -8,7 +8,8 @@
 #ifndef LSM303DLH_H_
 #define LSM303DLH_H_
 
-msg_t lsm303dlh_init(void);
+msg_t accelerometer_init(void);
+msg_t magnetometer_init(void);
 msg_t read_acceleration(int16_t *);
 msg_t read_magetometer(int16_t *);
 

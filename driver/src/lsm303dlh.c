@@ -16,9 +16,31 @@ static const I2CConfig i2cconfig = { 0x00902025, //from lsm303dlhc.c
 static const int LSM_ADDR_ACC = 0x19;
 static const int LSM_ADDR_MAG = 0x1E;
 
-msg_t lsm303dlh_init(void) {
+msg_t accelerometer_init(void) {
 	//acc
 	uint8_t buffer_tx[] = { 0x20, 0x77, 0x21, 0x90, 0x23, 0xc8, };
+
+	systime_t tmo = MS2ST(4);
+
+	uint8_t i;
+
+	msg_t ris;
+
+	i2cAcquireBus(&I2CD1);
+	i2cStart(&I2CD1, &i2cconfig);
+
+	//Configure Accelerometer
+	for (i = 0; i < sizeof(buffer_tx) / 2; i++) {
+		ris |= i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_ACC, buffer_tx + i * 2, 2, NULL, 0, tmo);
+	}
+
+	i2cStop(&I2CD1);
+	i2cReleaseBus(&I2CD1);
+
+	return ris;
+}
+
+msg_t magnetometer_init(void) {
 
 	//magne
 	uint8_t buffer_tx_mag[] = { 0x00, 0x18, 0x01, 0xE0, 0x02, 0x00 };
@@ -27,25 +49,19 @@ msg_t lsm303dlh_init(void) {
 
 	uint8_t i;
 
-
+	msg_t ris;
 
 	i2cAcquireBus(&I2CD1);
 	i2cStart(&I2CD1, &i2cconfig);
 
-	//Configure Accelerometer
-	for (i = 0; i < sizeof(buffer_tx) / 2; i++) {
-		i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_ACC, buffer_tx + i * 2, 2, NULL, 0, tmo);
-	}
 	// Configure Magnetometer
 	for (i = 0; i < sizeof(buffer_tx_mag) / 2; i++) {
-		i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_MAG, buffer_tx_mag + i * 2, 2, NULL, 0, tmo);
+		ris |= i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_MAG, buffer_tx_mag + i * 2, 2, NULL, 0, tmo);
 	}
 	i2cStop(&I2CD1);
 	i2cReleaseBus(&I2CD1);
 
-
-
-	return RDY_OK;
+	return ris;
 }
 
 msg_t read_acceleration(int16_t *values) {
