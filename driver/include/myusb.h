@@ -20,7 +20,7 @@ extern const SerialUSBConfig serusbcfg;
 /* Inline functions */
 
 /* Global functions */
-uint32_t USBSendData(uint8_t *data, uint32_t size, systime_t timeout);
+uint32_t USBSendData(uint8_t *data, size_t size, systime_t timeout);
 uint32_t USBReadByte(systime_t timeout);
 
 #endif

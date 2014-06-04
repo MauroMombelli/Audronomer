@@ -17,7 +17,9 @@ static const SPIConfig spi1cfg = {
   0
 };
 
-volatile read_gyro = 0;
+#define GIROSCOPE_USE_INTERRUPT TRUE
+
+volatile uint8_t read_gyro = 0;
 
 msg_t gyroscope_init(void) {
 	uint8_t txbuf[2];
@@ -50,7 +52,7 @@ msg_t gyroscope_init(void) {
 	return rxbuf[1];
 }
 
-msg_t read_gyroscope(int16_t *values) {
+msg_t gyroscope_read(int16_t *values) {
 	/* read from L3GD20 registers and assemble data */
 	/* 0xc0 sets read and address increment */
 	if (!read_gyro){
@@ -93,10 +95,11 @@ uint8_t gyroscope_interrutp_port(void){
 uint8_t gyroscope_ext_pin(void){
 	return 1;
 }
-extcallback_t gyroscope_interrutp_callback(void){
-	return read_gyro;
-}
-
-void gyro_interrutp(EXTDriver *extp, expchannel_t channel) {
+void gyroscope_interrutp(EXTDriver *extp, expchannel_t channel) {
+	(void)extp;
+	(void)channel;
 	read_gyro = 1;
+}
+extcallback_t gyroscope_interrutp_callback(void){
+	return gyroscope_interrutp;
 }

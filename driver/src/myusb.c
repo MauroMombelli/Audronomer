@@ -142,7 +142,7 @@ const SerialUSBConfig serusbcfg = {
   USBD1_INTERRUPT_REQUEST_EP
 };
 
-uint32_t USBSendData(uint8_t *data, uint32_t size, systime_t timeout)
+uint32_t USBSendData(uint8_t *data, size_t size, systime_t timeout)
 {
   uint32_t sent;
 

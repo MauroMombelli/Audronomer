@@ -31,35 +31,15 @@
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
 
-volatile uint8_t read_magne = 0, read_acce = 0, read_gyro = 0;
-
-/**
- * @brief HMC5983 external interrupt callback.
- *
- * @param[in] extp Pointer to EXT Driver.
- * @param[in] channel EXT Channel whom fired the interrupt.
- */
-void sensor_interrutp(EXTDriver *extp, expchannel_t channel) {
-	(void) extp;
-	if (channel == 2) {
-		read_magne = read_acce = 1;
-	} else if (channel == 1) {
-		read_gyro = 1;
-	} else {
-		//error?
-	}
-}
 const uint8_t SIZE_EXTCFG = 1;
 /* External interrupt configuration */
-static const EXTConfig extcfg[SIZE_EXTCFG];
+EXTConfig extcfg;
 
 int main(void) {
-	uint8_t i, a;
-	for (i=0; i<SIZE_EXTCFG; i++){
-		for (a=0; a<EXT_MAX_CHANNELS; a++){
-			extcfg[i][a].mode = EXT_CH_MODE_DISABLED;
-			extcfg[i][a].cb = NULL;
-		}
+	uint8_t i;
+	for (i = 0; i < EXT_MAX_CHANNELS; i++) {
+		extcfg.channels[i].mode = EXT_CH_MODE_DISABLED;
+		extcfg.channels[i].cb = NULL;
 	}
 
 	halInit();
@@ -77,9 +57,9 @@ int main(void) {
 
 	palSetPadMode(GPIOE, GPIOE_LED3_RED, PAL_MODE_OUTPUT_PUSHPULL);
 
-	/*TODO: check rigt pin and set them*/
-	/*palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);   /* SCL */
-	/*palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);   /* SDA */
+	/* set pin for i2c */
+	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);   /* SCL */
+	palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);   /* SDA */
 
 	palSetPad(GPIOE, GPIOE_LED3_RED);
 
@@ -87,33 +67,33 @@ int main(void) {
 	 * start listening the sensors
 	 */
 
+#ifdef GIROSCOPE_USE_INTERRUPT
 	expchannel_t gyro_channel = gyroscope_ext_pin();
-	if (gyro_channel >= 0 && gyro_channel < sizeof(extcfg)) { //waring, this sizeof may hit your ass
-		extcfg[gyro_channel].mode |= EXT_CH_MODE_AUTOSTART | gyroscope_interrupt_mode() | gyroscope_interrutp_port();
-		extcfg[gyro_channel].cb = gyroscope_interrutp_callback();
-	}
+	extcfg.channels[gyro_channel].mode |= EXT_CH_MODE_AUTOSTART | gyroscope_interrupt_mode() | gyroscope_interrutp_port();
+	extcfg.channels[gyro_channel].cb = gyroscope_interrutp_callback();
+#else //not GIROSCOPE_USE_INTERRUPT	//setup temporized
+#endif//end GIROSCOPE_USE_INTERRUPT#ifdef ACCELEROMETER_USE_INTERRUPT
 	expchannel_t acce_channel = accelerometer_ext_pin();
-	if (acce_channel >= 0 && acce_channel < sizeof(extcfg)) { //waring, this sizeof may hit your ass
-		extcfg[acce_channel].mode |= EXT_CH_MODE_AUTOSTART | accelerometer_interrupt_mode() | accelerometer_interrutp_port();
-		extcfg[gyro_channel].cb = accelerometer_interrutp_callback();
-	}
+	extcfg.channels[acce_channel].mode |= EXT_CH_MODE_AUTOSTART | accelerometer_interrupt_mode() | accelerometer_interrutp_port();
+	extcfg.channels[gyro_channel].cb = accelerometer_interrutp_callback();
+#else //not ACCELEROMETER_USE_INTERRUPT	//setup temporized
+#endif//end ACCELEROMETER_USE_INTERRUPT#ifdef MAGNETOMETER_USE_INTERRUPT
 	expchannel_t magne_channel = magnetometer_ext_pin();
-	if (magneChannel >= 0 && magneChannel < sizeof(extcfg)) { //waring, this sizeof may hit your ass
-		extcfg[magneChannel].mode |= EXT_CH_MODE_AUTOSTART | magnetometer_interrupt_mode() | magnetometer_interrutp_port();
-		extcfg[gyro_channel].cb = magnetometer_interrutp_callback();
-	}
+	extcfg.channels[magne_channel].mode |= EXT_CH_MODE_AUTOSTART | magnetometer_interrupt_mode() | magnetometer_interrutp_port();
+	extcfg.channels[magne_channel].cb = magnetometer_interrutp_callback();
+#else //not MAGNETOMETER_USE_INTERRUPT	//setup temporized
+#endif//end MAGNETOMETER_USE_INTERRUPT	extStart(&EXTD1, &extcfg);
 
-	extStart(&EXTD1, &extcfg);
+#ifdef GIROSCOPE_USE_INTERRUPT
+	extChannelEnable(&EXTD1, gyro_channel);
+#endif
 
-	if (gyro_channel >= 0 && gyro_channel < sizeof(extcfg)) { //waring, this sizeof may hit your ass
-		extChannelEnable(&EXTD1, gyro_channel);
-	}
-	if (acce_channel >= 0 && acce_channel < sizeof(extcfg)) { //waring, this sizeof may hit your ass
-		extChannelEnable(&EXTD1, acce_channel);
-	}
-	if (magneChannel >= 0 && magneChannel < sizeof(extcfg)) { //waring, this sizeof may hit your ass
-		extChannelEnable(&EXTD1, magneChannel);
-	}
+#ifdef ACCELEROMETER_USE_INTERRUPT
+	extChannelEnable(&EXTD1, acce_channel);
+#endif
+#ifdef MAGNETOMETER_USE_INTERRUPT
+	extChannelEnable(&EXTD1, magne_channel);
+#endif
 
 	/*
 	 * start the sensors!
@@ -135,33 +115,38 @@ int main(void) {
 
 	int8_t padStatus = 0;
 
-	uint8_t buff[30];
-	uint32_t written = 0;
+	//uint8_t buff[30];
+	//uint32_t written = 0;
 	systime_t tmo = MS2ST(4);
 
 	while (TRUE) {
-		read_gyroscope(gyroscope); //range:
-		read_acceleration(accerometer); //range:
-		read_magetometer(magnetometer); //range: -2048 2047, -4096 = overflow
+		gyroscope_read(gyroscope); //range:
+		accelerometer_read(accerometer); //range:
+		magnetometer_read(magnetometer); //range: -2048 2047, -4096 = overflow
 
-		uint32_t distAcceSquared = sqrt(accerometer[0] * accerometer[0] + accerometer[1] * accerometer[1] + accerometer[2] * accerometer[2]);
-		uint32_t distMagneSquared = magnetometer[0] * magnetometer[0] + magnetometer[1] * magnetometer[1] + magnetometer[2] * magnetometer[2];
+		//uint32_t distAcceSquared = sqrt(accerometer[0] * accerometer[0] + accerometer[1] * accerometer[1] + accerometer[2] * accerometer[2]);
+		//uint32_t distMagneSquared = magnetometer[0] * magnetometer[0] + magnetometer[1] * magnetometer[1] + magnetometer[2] * magnetometer[2];
 
-//		written = sprintf(buff, "G:%d,%d,%d\n", gyroscope[0], gyroscope[1], gyroscope[2]);
+		//written = sprintf(buff, "G:%d,%d,%d\n", gyroscope[0], gyroscope[1], gyroscope[2]);
 		//USBSendData("G:", 3, tmo);
-//		written = sprintf(buff, "A:%d,%d,%d\n", accerometer[0], accerometer[1], accerometer[2]);
+		//written = sprintf(buff, "A:%d,%d,%d\n", accerometer[0], accerometer[1], accerometer[2]);
 		//USBSendData(buff, written, tmo);
-//		written = sprintf(buff, "M:%d,%d,%d\n", magnetometer[0], magnetometer[1], magnetometer[2]);
+		//written = sprintf(buff, "M:%d,%d,%d\n", magnetometer[0], magnetometer[1], magnetometer[2]);
 		//USBSendData(buff, written, TIME_IMMEDIATE);
 
-		if (read_gyro) {
-			read_gyro = !read_gyro;
-			USBSendData("G:", 3, tmo);
+		if (gyroscope[0] != 0 && gyroscope[1] != 0 && gyroscope[2] != 0) {
+			USBSendData( (uint8_t *)"G:", 3, tmo );
+			USBSendData( (uint8_t *)gyroscope, 2 * 3, tmo );		//2 byte x 3 value
 		}
 
-		if (read_acce) {
-			read_acce = !read_acce;
-			USBSendData("A:", 3, tmo);
+		if (accerometer[0] != 0 && accerometer[1] != 0 && accerometer[2] != 0) {
+			USBSendData( (uint8_t *)"A:", 3, tmo );
+			USBSendData( (uint8_t *)accerometer, 2 * 3, tmo );		//2 byte x 3 value
+		}
+
+		if (magnetometer[0] != 0 && magnetometer[1] != 0 && magnetometer[2] != 0) {
+			USBSendData( (uint8_t *)"M:", 3, tmo );
+			USBSendData( (uint8_t *)magnetometer, 2 * 3, tmo );		//2 byte x 3 value
 		}
 
 		//chprintf((BaseSequentialStream *)&SDU1, "letti: %d, %d\n", distAcceSquared, distMagneSquared);
