@@ -45,7 +45,7 @@ msg_t accelerometer_init(void) {
 	return ris;
 }
 
-msg_t accelerometer_read(int16_t *values) {
+msg_t accelerometer_read(void) {
 
 	msg_t status;
 
@@ -66,11 +66,13 @@ msg_t accelerometer_read(int16_t *values) {
 
 	//buffer_rx[0] contains data ready bit
 	if ( status == RDY_OK && (buffer_rx[0] & 0x8) ){
+		/*
 		values[0] = ((int16_t)((uint16_t)buffer_rx[1] << 8) + buffer_rx[2]);
 		values[1] = ((int16_t)((uint16_t)buffer_rx[3] << 8) + buffer_rx[4]);
 		values[2] = ((int16_t)((uint16_t)buffer_rx[5] << 8) + buffer_rx[6]);
+		*/
 	}else{
-		values[0] = values[1] = values[2] = 0;
+		//values[0] = values[1] = values[2] = 0;
 	}
 
 	return status;
@@ -118,7 +120,7 @@ msg_t magnetometer_init(void) {
 	return ris;
 }
 
-msg_t magnetometer_read(int16_t *values) {
+msg_t magnetometer_read(void) {
 	uint8_t buffer_rx[7];
 	uint8_t buffer_tx = 0x03;
 	msg_t status;
@@ -135,11 +137,13 @@ msg_t magnetometer_read(int16_t *values) {
 
 	//buffer_rx[6] ontains data ready bit
 	if ( status == RDY_OK /*&& (buffer_rx[6] & 0x1) */){//does not seems to work
+		/*
 		values[0] = ((int16_t)((uint16_t)buffer_rx[0] << 8) + buffer_rx[1]);
 		values[2] = ((int16_t)((uint16_t)buffer_rx[2] << 8) + buffer_rx[3]);
 		values[1] = ((int16_t)((uint16_t)buffer_rx[4] << 8) + buffer_rx[5]);
+		*/
 	}else{
-		values[0] = values[1] = values[2] = 0;
+		//values[0] = values[1] = values[2] = 0;
 	}
 
 	return status;

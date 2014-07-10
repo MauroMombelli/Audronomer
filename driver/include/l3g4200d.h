@@ -9,7 +9,7 @@
 #define L3G4200D_H_
 
 msg_t gyroscope_init(void);
-msg_t gyroscope_read(int16_t *);
+msg_t gyroscope_read(void);
 
 uint8_t gyroscope_interrupt_mode(void);
 uint8_t gyroscope_interrutp_port(void);

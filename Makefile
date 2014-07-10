@@ -121,7 +121,7 @@ ASMSRC = $(PORTASM)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various $(DRIVERINC) 
+         $(CHIBIOS)/os/various $(DRIVERINC)
 
 #
 # Project, sources and paths
@@ -199,7 +199,7 @@ UDEFS =
 UADEFS =
 
 # List all user directories here
-UINCDIR =
+UINCDIR =sensors
 
 # List the user directory to look for the libraries here
 ULIBDIR =

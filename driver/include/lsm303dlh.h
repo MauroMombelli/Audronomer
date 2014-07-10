@@ -9,7 +9,7 @@
 #define LSM303DLH_H_
 
 msg_t accelerometer_init(void);
-msg_t accelerometer_read(int16_t *);
+msg_t accelerometer_read(void);
 
 uint8_t accelerometer_interrupt_mode(void);
 uint8_t accelerometer_interrutp_port(void);
@@ -18,6 +18,6 @@ extcallback_t accelerometer_interrutp_callback(void);
 void accelerometer_interrutp(EXTDriver, expchannel_t);
 
 msg_t magnetometer_init(void);
-msg_t magnetometer_read(int16_t *);
+msg_t magnetometer_read(void);
 
 #endif /* LSM303DLH_H_ */
