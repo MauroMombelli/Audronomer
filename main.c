@@ -43,7 +43,7 @@ static struct sensor_interrupt sensors_interrupt[] =
 		.interrupt_channel=1,.mode=EXT_CH_MODE_RISING_EDGE|EXT_MODE_GPIOE,.sensor={.init_sensor=gyroscope_init,.read_sensor=gyroscope_read}
 	},
 	{
-		.interrupt_channel=1,.mode=EXT_CH_MODE_RISING_EDGE|EXT_MODE_GPIOE,.sensor={.init_sensor=accelerometer_init,.read_sensor=accelerometer_read}
+		.interrupt_channel=2,.mode=EXT_CH_MODE_RISING_EDGE|EXT_MODE_GPIOE,.sensor={.init_sensor=accelerometer_init,.read_sensor=accelerometer_read}
 	}
 };
 
@@ -168,11 +168,25 @@ int main(void) {
 	expchannel_t gyro_channel = gyroscope_ext_pin();
 	extcfg.channels[gyro_channel].mode |= EXT_CH_MODE_AUTOSTART | gyroscope_interrupt_mode() | gyroscope_interrutp_port();
 	extcfg.channels[gyro_channel].cb = gyroscope_interrutp_callback();
-#else //not GIROSCOPE_USE_INTERRUPT	//setup temporized#endif//end GIROSCOPE_USE_INTERRUPT#ifdef ACCELEROMETER_USE_INTERRUPT	expchannel_t acce_channel = accelerometer_ext_pin();	extcfg.channels[acce_channel].mode |= EXT_CH_MODE_AUTOSTART | accelerometer_interrupt_mode() | accelerometer_interrutp_port();
+#else //not GIROSCOPE_USE_INTERRUPT
+	//setup temporized
+#endif//end GIROSCOPE_USE_INTERRUPT
+#ifdef ACCELEROMETER_USE_INTERRUPT
+	expchannel_t acce_channel = accelerometer_ext_pin();
+	extcfg.channels[acce_channel].mode |= EXT_CH_MODE_AUTOSTART | accelerometer_interrupt_mode() | accelerometer_interrutp_port();
 	extcfg.channels[acce_channel].cb = accelerometer_interrutp_callback();
-#else //not ACCELEROMETER_USE_INTERRUPT	//setup polling#endif//end ACCELEROMETER_USE_INTERRUPT#ifdef MAGNETOMETER_USE_INTERRUPT	expchannel_t magne_channel = magnetometer_ext_pin();	extcfg.channels[magne_channel].mode |= EXT_CH_MODE_AUTOSTART | magnetometer_interrupt_mode() | magnetometer_interrutp_port();
+#else //not ACCELEROMETER_USE_INTERRUPT
+	//setup polling
+#endif//end ACCELEROMETER_USE_INTERRUPT
+#ifdef MAGNETOMETER_USE_INTERRUPT
+	expchannel_t magne_channel = magnetometer_ext_pin();
+	extcfg.channels[magne_channel].mode |= EXT_CH_MODE_AUTOSTART | magnetometer_interrupt_mode() | magnetometer_interrutp_port();
 	extcfg.channels[magne_channel].cb = magnetometer_interrutp_callback();
-#else //not MAGNETOMETER_USE_INTERRUPT	//setup polling#endif//end MAGNETOMETER_USE_INTERRUPT	extStart(&EXTD1, &extcfg);#ifdef GIROSCOPE_USE_INTERRUPT
+#else //not MAGNETOMETER_USE_INTERRUPT
+	//setup polling
+#endif//end MAGNETOMETER_USE_INTERRUPT
+	extStart(&EXTD1, &extcfg);
+#ifdef GIROSCOPE_USE_INTERRUPT
 	extChannelEnable(&EXTD1, gyro_channel);
 #endif
 
