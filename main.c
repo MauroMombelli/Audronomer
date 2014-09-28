@@ -50,6 +50,8 @@ int main(void) {
 	halInit();
 	chSysInit();
 
+	init_static_generics();
+
 	/*
 	 * Initializes a serial-over-USB CDC driver.
 	 */

@@ -11,6 +11,8 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "engine_db.h"
+
 msg_t accelerometer_init(void);
 msg_t accelerometer_read(void);
 

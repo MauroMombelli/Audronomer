@@ -5,12 +5,10 @@
  *      Author: mauro
  */
 
-
 #include "lsm303dlh.h"
 
 static const I2CConfig i2cconfig = { 0x00902025, //from lsm303dlhc.c
-		0,
-		0 };
+		0, 0 };
 
 static const int LSM_ADDR_ACC = 0x19;
 static const int LSM_ADDR_MAG = 0x1E;
@@ -53,45 +51,48 @@ msg_t accelerometer_read(void) {
 
 	systime_t tmo = MS2ST(4);
 
-
-
 	i2cAcquireBus(&I2CD1);
 	i2cStart(&I2CD1, &i2cconfig);
 	status = i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_ACC, &buffer_tx, 1, buffer_rx, sizeof(buffer_rx), tmo); //please, sizeof works only on array, never use with pointer, even if pointing array
 	i2cStop(&I2CD1);
 	i2cReleaseBus(&I2CD1);
 
-
-
 	//buffer_rx[0] contains data ready bit
-	if ( status == RDY_OK && (buffer_rx[0] & 0x8) ){
+	if (status == RDY_OK && (buffer_rx[0] & 0x8)) {
+		struct raw_accelerometer tmp;
+
+		tmp.x = ((int16_t) ((uint16_t) buffer_rx[1] << 8) + buffer_rx[2]);
+		tmp.y = ((int16_t) ((uint16_t) buffer_rx[3] << 8) + buffer_rx[4]);
+		tmp.z = ((int16_t) ((uint16_t) buffer_rx[5] << 8) + buffer_rx[6]);
+
+		put_raw_accelerometer(&tmp);
 		/*
-		values[0] = ((int16_t)((uint16_t)buffer_rx[1] << 8) + buffer_rx[2]);
-		values[1] = ((int16_t)((uint16_t)buffer_rx[3] << 8) + buffer_rx[4]);
-		values[2] = ((int16_t)((uint16_t)buffer_rx[5] << 8) + buffer_rx[6]);
-		*/
-	}else{
+		 values[0] = ((int16_t)((uint16_t)buffer_rx[1] << 8) + buffer_rx[2]);
+		 values[1] = ((int16_t)((uint16_t)buffer_rx[3] << 8) + buffer_rx[4]);
+		 values[2] = ((int16_t)((uint16_t)buffer_rx[5] << 8) + buffer_rx[6]);
+		 */
+	} else {
 		//values[0] = values[1] = values[2] = 0;
 	}
 
 	return status;
 }
 
-uint8_t accelerometer_interrupt_mode(void){
+uint8_t accelerometer_interrupt_mode(void) {
 	return EXT_CH_MODE_RISING_EDGE;
 }
-uint8_t accelerometer_interrutp_port(void){
+uint8_t accelerometer_interrutp_port(void) {
 	return EXT_MODE_GPIOE;
 }
-uint8_t accelerometer_ext_pin(void){
+uint8_t accelerometer_ext_pin(void) {
 	return 2;
 }
 void accelerometer_interrutp(EXTDriver *extp, expchannel_t channel) {
-	(void)extp;
-	(void)channel;
+	(void) extp;
+	(void) channel;
 	read_accelerometer = 1;
 }
-extcallback_t accelerometer_interrutp_callback(void){
+extcallback_t accelerometer_interrutp_callback(void) {
 	return accelerometer_interrutp;
 }
 
@@ -135,13 +136,20 @@ msg_t magnetometer_read(void) {
 	i2cStop(&I2CD1);
 
 	//buffer_rx[6] ontains data ready bit
-	if ( status == RDY_OK /*&& (buffer_rx[6] & 0x1) */){//does not seems to work
+	if (status == RDY_OK /*&& (buffer_rx[6] & 0x1) */) { //does not seems to work
+		struct raw_magnetometer tmp;
+
+		tmp.x = ((int16_t)((uint16_t)buffer_rx[0] << 8) + buffer_rx[1]);
+		tmp.y = ((int16_t)((uint16_t)buffer_rx[2] << 8) + buffer_rx[3]);
+		tmp.z = ((int16_t)((uint16_t)buffer_rx[4] << 8) + buffer_rx[5]);
+
+		put_raw_magnetometer(&tmp);
 		/*
-		values[0] = ((int16_t)((uint16_t)buffer_rx[0] << 8) + buffer_rx[1]);
-		values[2] = ((int16_t)((uint16_t)buffer_rx[2] << 8) + buffer_rx[3]);
-		values[1] = ((int16_t)((uint16_t)buffer_rx[4] << 8) + buffer_rx[5]);
-		*/
-	}else{
+		 values[0] = ((int16_t)((uint16_t)buffer_rx[0] << 8) + buffer_rx[1]);
+		 values[2] = ((int16_t)((uint16_t)buffer_rx[2] << 8) + buffer_rx[3]);
+		 values[1] = ((int16_t)((uint16_t)buffer_rx[4] << 8) + buffer_rx[5]);
+		 */
+	} else {
 		//values[0] = values[1] = values[2] = 0;
 	}
 

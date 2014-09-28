@@ -75,12 +75,15 @@ msg_t gyroscope_read(void) {
 	spiReleaseBus(&SPID1);
 
 	if ( (rxbuf[1] & 0x8) || (rxbuf[1] & 0x7) ) {
+
 		struct raw_gyroscope tmp;
+
 		tmp.x = ((uint16_t)rxbuf[3] << 8) | rxbuf[2];
 		tmp.y = ((uint16_t)rxbuf[5] << 8) | rxbuf[4];
 		tmp.z = ((uint16_t)rxbuf[7] << 8) | rxbuf[6];
 
 		put_raw_gyroscope(&tmp);
+
 		return RDY_OK;
 	}else{
 		//values[0] = values[1] = values[2] = 0;
