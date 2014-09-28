@@ -1,10 +1,7 @@
-#ifndef STRUCT_H_
-#define STRUCT_H_
-
 /* BEGIN: just some struct to test, fell free to move them on external header file */
 
-#include "lsm303dlh.h"
-#include "l3g4200d.h"
+struct raw_gyroscope{
+	uint16_t x, y, z;
+};
 
 /* END: just some struct to test, fell free to move them on external header file */
-#endif
