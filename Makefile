@@ -75,6 +75,7 @@ include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F3xx/port.mk
 include $(CHIBIOS)/os/kernel/kernel.mk
 include $(CHIBIOS)/driver/driver.mk
+include $(CHIBIOS)/static_db/static_db.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
@@ -89,6 +90,7 @@ CSRC = $(PORTSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(DRIVERSRC) \
+       $(STATICSRC) \
        $(CHIBIOS)/os/various/chprintf.c \
        main.c
 
@@ -121,7 +123,7 @@ ASMSRC = $(PORTASM)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various $(DRIVERINC)
+         $(CHIBIOS)/os/various $(STATICINC) $(DRIVERINC) 
 
 #
 # Project, sources and paths
@@ -199,7 +201,7 @@ UDEFS =
 UADEFS =
 
 # List all user directories here
-UINCDIR =sensors
+UINCDIR =
 
 # List the user directory to look for the libraries here
 ULIBDIR =

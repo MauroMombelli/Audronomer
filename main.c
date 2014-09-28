@@ -17,6 +17,8 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "engine_db.h"
+
 #include "lsm303dlh.h"
 #include "l3g4200d.h"
 #include "math.h"

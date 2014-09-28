@@ -5,8 +5,7 @@
  *      Author: mauro
  */
 
-#include "ch.h"
-#include "hal.h"
+#include "l3g4200d.h"
 
 static const SPIConfig spi1cfg = {
   NULL,
@@ -76,11 +75,12 @@ msg_t gyroscope_read(void) {
 	spiReleaseBus(&SPID1);
 
 	if ( (rxbuf[1] & 0x8) || (rxbuf[1] & 0x7) ) {
-		/*
-		values[0] = ((uint16_t)rxbuf[3] << 8) | rxbuf[2];
-		values[1] = ((uint16_t)rxbuf[5] << 8) | rxbuf[4];
-		values[2] = ((uint16_t)rxbuf[7] << 8) | rxbuf[6];
-		*/
+		struct raw_gyroscope tmp;
+		tmp.x = ((uint16_t)rxbuf[3] << 8) | rxbuf[2];
+		tmp.y = ((uint16_t)rxbuf[5] << 8) | rxbuf[4];
+		tmp.z = ((uint16_t)rxbuf[7] << 8) | rxbuf[6];
+
+		put_raw_gyroscope(&tmp);
 		return RDY_OK;
 	}else{
 		//values[0] = values[1] = values[2] = 0;

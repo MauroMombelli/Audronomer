@@ -1,13 +1,12 @@
 /*
- * lsm303dhl.c
+ * lsm303dlh.c
  *
  *  Created on: May 28, 2014
  *      Author: mauro
  */
 
 
-#include "ch.h"
-#include "hal.h"
+#include "lsm303dlh.h"
 
 static const I2CConfig i2cconfig = { 0x00902025, //from lsm303dlhc.c
 		0,
