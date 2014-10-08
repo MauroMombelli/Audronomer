@@ -19,8 +19,6 @@ msg_t accelerometer_read(void);
 uint8_t accelerometer_interrupt_mode(void);
 uint8_t accelerometer_interrutp_port(void);
 uint8_t accelerometer_ext_pin(void);
-extcallback_t accelerometer_interrutp_callback(void);
-void accelerometer_interrutp(EXTDriver*, expchannel_t);
 
 msg_t magnetometer_init(void);
 msg_t magnetometer_read(void);

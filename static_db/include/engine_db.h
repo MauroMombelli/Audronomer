@@ -30,9 +30,11 @@ static void * const generic[] =
 #undef X
 #undef SEP
 
+static uint8_t update_number[sizeof(generic)/sizeof(generic[0])] = {0};
+
 /* here we create all the getter function. add here your array locking code */
 #define SEP ;
-#define X(a,b) extern void get_##a(struct a * dest);
+#define X(a,b) extern uint8_t get_##a(struct a * dest);
 #include "array_initialization.h"
 #undef X
 #undef SEP
