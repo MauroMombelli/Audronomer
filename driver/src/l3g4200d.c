@@ -27,19 +27,19 @@ msg_t gyroscope_init(void) {
 
 	spiSelect(&SPID1);
 	txbuf[0] = 0x20;
-	txbuf[1] = 0b11001111;
+	txbuf[1] = 0b11001111; //ODR 800Hz, normal mode, 3 axis reading
 	spiExchange(&SPID1, 2, txbuf, rxbuf);//write
 	spiUnselect(&SPID1);
 
 	spiSelect(&SPID1);
 	txbuf[0] = 0x22;
-	txbuf[1] = 0b00001000; //enable int2_dataready
+	txbuf[1] = 0b00001000; //enable int2_dataready I2_DRDY
 	spiExchange(&SPID1, 2, txbuf, rxbuf);//write
 	spiUnselect(&SPID1);
 
 	spiSelect(&SPID1);
 	txbuf[0] = 0x23;
-	txbuf[1] = 0b11010000;
+	txbuf[1] = 0b11010000; //block data update, MSB, 500°/s
 	spiExchange(&SPID1, 2, txbuf, rxbuf);//write
 	spiUnselect(&SPID1);
 

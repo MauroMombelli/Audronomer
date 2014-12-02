@@ -43,10 +43,10 @@
 
 #define __need_NULL
 #define __need_size_t
-#include "stddef.h"
+#include <stddef.h>
 
 #if !defined(_STDINT_H) && !defined(__STDINT_H_)
-#include "stdint.h"
+#include <stdint.h>
 #endif
 
 /**

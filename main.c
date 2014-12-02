@@ -13,28 +13,19 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
+#include <stdlib.h>
+#include <inttypes.h>
 
 #include "ch.h"
 #include "hal.h"
+
+#include "usbcfg.h"
 
 #include "engine_db.h"
 
 #include "math.h"
 
-#include "myusb.h"
-
-#include "chprintf.h"
-
 #include "read_thread.h"
-
-#include <stdlib.h>
-
-/*
- * DP resistor control is not possible on the STM32F3-Discovery, using stubs
- * for the connection macros.
- */
-#define usb_lld_connect_bus(usbp)
-#define usb_lld_disconnect_bus(usbp)
 
 /* External interrupt configuration */
 EXTConfig extcfg;
@@ -49,6 +40,12 @@ void unkonw_interrupt(EXTDriver *extp, expchannel_t channel) {
 	interruptCounter[channel]++;
 
 }
+
+
+#define usb_lld_connect_bus(usbp)
+#define usb_lld_disconnect_bus(usbp)
+/* Virtual serial port over USB.*/
+SerialUSBDriver SDU1;
 
 int main(void) {
 	//setup external interrupt channels
@@ -82,22 +79,33 @@ int main(void) {
 
 	init_static_generics();
 
-	/*
-	 * Initializes a serial-over-USB CDC driver.
-	 */
 	sduObjectInit(&SDU1);
 	sduStart(&SDU1, &serusbcfg);
-
-	/*
-	 * Activates the USB driver and then the USB bus pull-up on D+.
-	 * Note, a delay is inserted in order to not have to disconnect the cable
-	 * after a reset.
-	 */
-	usbDisconnectBus(SDU1);
-	chThdSleepMilliseconds(1500);
+	usbDisconnectBus(serusbcfg.usbp);
+	chThdSleepMilliseconds(1000);
 	usbStart(serusbcfg.usbp, &usbcfg);
-	usbConnectBus(SDU1);
+	usbConnectBus(serusbcfg.usbp);
 
+
+	chSequentialStreamWrite(&SDU1, "start\r\n", 7);
+	/*
+	 * Activates the serial driver 1, PA9 and PA10 are routed to USART1.
+	 */
+	/*
+	 uartObjectInit(&UARTD1);
+	 uartStart(&UARTD1, &uart_cfg_1);
+	 palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(7)); // USART1 TX.
+	 palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7)); // USART1 RX.
+
+
+	sdStart(&SD1, &sd1_config);
+	*/
+	/*
+	 * Starts the transmission, it will be handled entirely in background.
+	 */
+	//uartStartSend(&UARTD1, 13, "Starting...\r\n");
+
+	//PREOPARE LED RED
 	palSetPadMode(GPIOE, GPIOE_LED3_RED, PAL_MODE_OUTPUT_PUSHPULL);
 
 	/* set pin for i2c */
@@ -127,7 +135,7 @@ int main(void) {
 	 */
 	int8_t padStatus = 0;
 
-	systime_t tmo = US2ST(100);
+	//systime_t tmo = TIME_INFINITE; //no timeout
 
 	systime_t start = chTimeNow(), elapsed;
 
@@ -139,21 +147,36 @@ int main(void) {
 	uint8_t update, diff;
 	uint16_t g = 0, m = 0, a = 0;
 
+	uint16_t tmpOut = -32768;
 	while (TRUE) {
 
-		chThdSleep(tmo); //MUST FIND A BETTER WAY!
+		//chThdSleepMicroseconds(5000); //MUST FIND A BETTER WAY!
+
+		chThdYield();
 
 		update = get_raw_gyroscope(&tmp_gyro);
 
 		diff = update - lastUpdateG;
 		if (diff) {
-			USBSendData((uint8_t *) "G", 1, tmo);
-			USBSendData((uint8_t *) &tmp_gyro, 2 * 3, tmo);		//2 byte x 3 value
-			g+=diff;
+			//USBSendData((uint8_t *) "G", 1, tmo);
+			//USBSendData((uint8_t *) &tmp_gyro, 2 * 3, tmo);		//2 byte x 3 value
+			//chprintf((BaseSequentialStream *)&SDU1, "G%" PRIu16 " %" PRIu16 " %" PRIu16 "\n", tmp_gyro.x, tmp_gyro.y, tmp_gyro.z );
+			//chSequentialStreamPut((BaseSequentialStream * )&SDU1, 'G');
+			//chSequentialStreamWrite((BaseSequentialStream * )&SDU1, (const uint8_t * )&tmp_gyro, 6);
+			//chThdSleepMicroseconds(87 * 1);
+			tmpOut = -32768;
+			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
+			chSequentialStreamWrite(&SDU1, &tmp_gyro, 6);
+			//chThdSleepMicroseconds(87 * 6);
+
+			g += diff;
 			lastUpdateG = update;
 			if (diff > 1) {
-				USBSendData((uint8_t *) "ESLOWG", 6, tmo);
-				USBSendData((uint8_t *) &diff, 1, tmo);
+				//USBSendData((uint8_t *) "ESLOWG", 6, tmo);
+				//USBSendData((uint8_t *) &diff, 1, tmo);
+				tmpOut = -32765;
+				chSequentialStreamWrite(&SDU1, &tmpOut, 2);
+				chSequentialStreamWrite(&SDU1, &tmp_gyro, 6);
 			}
 		}
 
@@ -161,13 +184,28 @@ int main(void) {
 
 		diff = update - lastUpdateA;
 		if (diff) {
-			USBSendData((uint8_t *) "A", 1, tmo);
-			USBSendData((uint8_t *) &tmp_acce, 2 * 3, tmo);		//2 byte x 3 value
-			a+=diff;
+			//USBSendData((uint8_t *) "A", 1, tmo);
+			//USBSendData((uint8_t *) &tmp_acce, 2 * 3, tmo);		//2 byte x 3 value
+			//chprintf((BaseSequentialStream *)&SDU1, "A%" PRIu16 " %" PRIu16 " %" PRIu16 "\n", tmp_acce.x, tmp_acce.y, tmp_acce.z );
+			//chSequentialStreamPut((BaseSequentialStream * )&SDU1, 'A');
+			//chSequentialStreamWrite((BaseSequentialStream * )&SDU1, (const uint8_t * )&tmp_acce, 6);
+			//uartStartSend(&UARTD1, 1, "A");
+			//uartStartSend(&UARTD1, 6, &tmp_gyro);
+			//chSequentialStreamWrite(&SDU1, "A", 1);
+			//chThdSleepMicroseconds(87 * 1);
+			//chSequentialStreamWrite(&SDU1, -32767, 2);
+			tmpOut = -32767;
+			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
+			chSequentialStreamWrite(&SDU1, &tmp_acce, 6);
+			//chThdSleepMicroseconds(87 * 6);
+			a += diff;
 			lastUpdateA = update;
 			if (diff > 1) {
-				USBSendData((uint8_t *) "ESLOWA", 6, tmo);
-				USBSendData((uint8_t *) &diff, 1, tmo);
+				tmpOut = -32765;
+				//USBSendData((uint8_t *) "ESLOWA", 6, tmo);
+				//USBSendData((uint8_t *) &diff, 1, tmo);
+				chSequentialStreamWrite(&SDU1, &tmpOut, 2);
+				chSequentialStreamWrite(&SDU1, &tmp_acce, 6);
 			}
 		}
 
@@ -175,13 +213,27 @@ int main(void) {
 
 		diff = update - lastUpdateM;
 		if (diff) {
-			USBSendData((uint8_t *) "M", 1, tmo);
-			USBSendData((uint8_t *) &tmp_magne, 2 * 3, tmo);		//2 byte x 3 value
-			m+=diff;
+			//USBSendData((uint8_t *) "M", 1, tmo);
+			//USBSendData((uint8_t *) &tmp_magne, 2 * 3, tmo);		//2 byte x 3 value
+			//chprintf((BaseSequentialStream *)&SDU1, "M%" PRIu16 " %" PRIu16 " %" PRIu16 "\n", tmp_magne.x, tmp_magne.y, tmp_magne.z );
+			//chSequentialStreamPut((BaseSequentialStream * )&SDU1, 'M');
+			//chSequentialStreamWrite((BaseSequentialStream * )&SDU1, (const uint8_t * )&tmp_magne, 6);
+			//chSequentialStreamWrite(&SDU1, "M", 1);
+			//chThdSleepMicroseconds(87 * 1);
+			//chSequentialStreamWrite(&SDU1, -32766, 2);
+			tmpOut = -32766;
+			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
+			chSequentialStreamWrite(&SDU1, &tmp_magne, 6);
+			//chThdSleepMicroseconds(87 * 6);
+
+			m += diff;
 			lastUpdateM = update;
 			if (diff > 1) {
-				USBSendData((uint8_t *) "ESLOWM", 6, tmo);
-				USBSendData((uint8_t *) &diff, 1, tmo);
+				tmpOut = -32765;
+				//USBSendData((uint8_t *) "ESLOWM", 6, tmo);
+				//USBSendData((uint8_t *) &diff, 1, tmo);
+				chSequentialStreamWrite(&SDU1, &tmpOut, 2);
+				chSequentialStreamWrite(&SDU1, &tmp_magne, 6);
 			}
 		}
 
@@ -196,16 +248,17 @@ int main(void) {
 			padStatus = !padStatus;
 
 			uint8_t i;
-			for (i=0; i< EXT_MAX_CHANNELS; i++){
+			for (i = 0; i < EXT_MAX_CHANNELS; i++) {
 				interruptCounter[i] = 0;
 			}
-
-			USBSendData((uint8_t *) "S", 1, tmo);
-			USBSendData((uint8_t *) &event_read_gyro, 2, tmo);
-			USBSendData((uint8_t *) &event_read_acce, 2, tmo);
-			uint16_t tmp = event_read; //should be atomic
-			g = a = m = event_read = event_read_gyro = event_read_acce = 0;
-			USBSendData((uint8_t *) &tmp, 2, tmo); //send number of event read
+			/*
+			 USBSendData((uint8_t *) "S", 1, tmo);
+			 USBSendData((uint8_t *) &event_read_gyro, 2, tmo);
+			 USBSendData((uint8_t *) &event_read_acce, 2, tmo);
+			 uint16_t tmp = event_read; //should be atomic
+			 g = a = m = event_read = event_read_gyro = event_read_acce = 0;
+			 USBSendData((uint8_t *) &tmp, 2, tmo); //send number of event read
+			 */
 
 		}
 	}

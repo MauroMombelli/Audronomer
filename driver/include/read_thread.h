@@ -44,8 +44,8 @@ static msg_t readThread(void *arg) {
 	gyroscope_read();
 	accelerometer_read();
 
-	systime_t start = 0;
-	systime_t counteg;
+	//systime_t start = 0;
+	//systime_t counteg;
 
 	while (TRUE) {
 
@@ -54,8 +54,8 @@ static msg_t readThread(void *arg) {
 
 		event_read++;
 
-		counteg = RTT2US( halGetCounterValue() - start );
-		start = halGetCounterValue();
+		//counteg = RTT2US( halGetCounterValue() - start );
+		//start = halGetCounterValue();
 
 		if ( (event & (EVENT_ACCE_READY) ) != 0) {
 			accelerometer_read();

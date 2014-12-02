@@ -1,7 +1,6 @@
 # List of all the ChibiOS/RT HAL files, there is no need to remove the files
 # from this list, you can disable parts of the HAL by editing halconf.h.
-DRIVERSRC = ${CHIBIOS}/driver/src/lsm303dlhc.c \
-			${CHIBIOS}/driver/src/l3g4200d.c
+USBSRC = ${CHIBIOS}/usb/src/usbcfg.c
 
 # Required include directories
-DRIVERINC = ${CHIBIOS}/driver/include
+USBINC = ${CHIBIOS}/usb/include

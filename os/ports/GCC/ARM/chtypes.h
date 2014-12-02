@@ -36,9 +36,9 @@
 #ifndef _CHTYPES_H_
 #define _CHTYPES_H_
 
-#include "stddef.h"
-#include "stdint.h"
-#include "stdbool.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef bool            bool_t;         /**< Fast boolean type.             */
 typedef uint8_t         tmode_t;        /**< Thread flags.                  */
