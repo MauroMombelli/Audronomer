@@ -77,6 +77,7 @@ include $(CHIBIOS)/os/kernel/kernel.mk
 include $(CHIBIOS)/driver/driver.mk
 include $(CHIBIOS)/usb/usb.mk
 include $(CHIBIOS)/static_db/static_db.mk
+include $(CHIBIOS)/dcm/dcm.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
@@ -93,6 +94,7 @@ CSRC = $(PORTSRC) \
        $(DRIVERSRC) \
        $(USBSRC) \
        $(STATICSRC) \
+       $(DCMSRC) \
        $(CHIBIOS)/os/various/chprintf.c \
        main.c
 
@@ -125,7 +127,7 @@ ASMSRC = $(PORTASM)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various $(STATICINC) $(DRIVERINC) $(USBINC) 
+         $(CHIBIOS)/os/various $(STATICINC) $(DRIVERINC) $(USBINC) $(DCMINC) 
 
 #
 # Project, sources and paths

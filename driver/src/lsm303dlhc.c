@@ -127,8 +127,8 @@ msg_t magnetometer_read(void) {
 		struct raw_magnetometer tmp;
 
 		tmp.x = ((int16_t)((uint16_t)buffer_rx[0] << 8) + buffer_rx[1]);
-		tmp.y = ((int16_t)((uint16_t)buffer_rx[2] << 8) + buffer_rx[3]);
-		tmp.z = ((int16_t)((uint16_t)buffer_rx[4] << 8) + buffer_rx[5]);
+		tmp.z = ((int16_t)((uint16_t)buffer_rx[2] << 8) + buffer_rx[3]);
+		tmp.y = ((int16_t)((uint16_t)buffer_rx[4] << 8) + buffer_rx[5]);
 
 		put_raw_magnetometer(&tmp);
 		/*
