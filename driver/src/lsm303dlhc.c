@@ -16,6 +16,9 @@ static const int LSM_ADDR_MAG = 0x1E;
 #define ACCELEROMETER_USE_INTERRUPT TRUE
 #define MAGNETOMETER_USE_INTERRUPT FALSE
 
+uint8_t last_update_m=0;
+uint8_t last_update_a=0;
+
 msg_t accelerometer_init(void) {
 	//acc
 	uint8_t buffer_tx[] = { 0x20, 0x97, 0x22, 0x04, 0x2E, 0x20, 0x25, 0x08 };
@@ -66,7 +69,7 @@ msg_t accelerometer_read(void) {
 		put_raw_accelerometer(&tmp);
 
 		return RDY_OK;
-	}else{
+	} else {
 		return RDY_RESET;
 	}
 }
@@ -82,7 +85,6 @@ uint8_t accelerometer_ext_pin(void) {
 }
 
 msg_t magnetometer_init(void) {
-
 	//magne
 	uint8_t buffer_tx_mag[] = { 0x00, 0x18, 0x01, 0xE0, 0x02, 0x00 };
 
@@ -112,7 +114,6 @@ msg_t magnetometer_read(void) {
 
 	systime_t tmo = MS2ST(4);
 
-
 	i2cStart(&I2CD1, &i2cconfig);
 	i2cAcquireBus(&I2CD1);
 
@@ -121,14 +122,13 @@ msg_t magnetometer_read(void) {
 	i2cReleaseBus(&I2CD1);
 	i2cStop(&I2CD1);
 
-
 	//buffer_rx[6] ontains data ready bit
 	if (status == RDY_OK /*&& (buffer_rx[6] & 0x1) */) { //does not seems to work
 		struct raw_magnetometer tmp;
 
-		tmp.x = ((int16_t)((uint16_t)buffer_rx[0] << 8) + buffer_rx[1]);
-		tmp.z = ((int16_t)((uint16_t)buffer_rx[2] << 8) + buffer_rx[3]);
-		tmp.y = ((int16_t)((uint16_t)buffer_rx[4] << 8) + buffer_rx[5]);
+		tmp.x = ((int16_t) ((uint16_t) buffer_rx[0] << 8) + buffer_rx[1]);
+		tmp.z = ((int16_t) ((uint16_t) buffer_rx[2] << 8) + buffer_rx[3]);
+		tmp.y = ((int16_t) ((uint16_t) buffer_rx[4] << 8) + buffer_rx[5]);
 
 		put_raw_magnetometer(&tmp);
 		/*
@@ -141,4 +141,76 @@ msg_t magnetometer_read(void) {
 	}
 
 	return status;
+}
+
+void get_estimated_error_acce(union quaternion q, union vector3f *ris) {
+	struct raw_accelerometer tmp;
+
+	uint8_t update = get_raw_accelerometer(&tmp);
+	if ((update-last_update_a > 0) && (tmp.x != 0.0f || tmp.y != 0.0f || tmp.z != 0.0f)) {
+		last_update_a = update;
+
+		float halfvx, halfvy, halfvz;
+
+		// Normalise accelerometer measurement
+		float recipNorm = invSqrt(tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z);
+		tmp.x *= recipNorm;
+		tmp.y *= recipNorm;
+		tmp.z *= recipNorm;
+
+		// Estimated direction of gravity
+		halfvx = q.q1*q.q3 - q.q0*q.q2;
+		halfvy = q.q0*q.q1 + q.q2*q.q3;
+		halfvz = q.q0*q.q0 - 0.5f + q.q3*q.q3;
+
+		// Error is sum of cross product between estimated direction and measured direction of field vectors
+		ris->x += (tmp.y * halfvz - tmp.z * halfvy);
+		ris->y += (tmp.z * halfvx - tmp.x * halfvz);
+		ris->z += (tmp.x * halfvy - tmp.y * halfvx);
+
+
+		//System.out.println("HalfV|"+"halfvx: "+halfvx+" halfvy: "+halfvy+" halfvz: "+halfvz);
+		//System.out.println("Halferr|"+"halfex: "+halfex+" halfey: "+halfey+" halfez: "+halfez);
+	}
+}
+
+void get_estimated_error_magne(union quaternion q, union vector3f *ris) {
+	struct raw_magnetometer tmp;
+
+	uint8_t update = get_raw_magnetometer(&tmp);
+
+	if ((update-last_update_m > 0) && (tmp.x != 0.0f || tmp.y != 0.0f || tmp.z != 0.0f)) {
+		last_update_m = update;
+
+		float hx, hy, bx, bz;
+		float halfwx, halfwy, halfwz;
+
+		// Normalise magnetometer measurement
+		float recipNorm = invSqrt(tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z);
+		tmp.x *= recipNorm;
+		tmp.y *= recipNorm;
+		tmp.z *= recipNorm;
+
+		// Reference direction of Earth's magnetic field
+		hx = 2.0f * (tmp.x * (0.5f - q.q2 * q.q2 - q.q3 * q.q3) + tmp.y * (q.q1 * q.q2 - q.q0 * q.q3) + tmp.z * (q.q1 * q.q3 + q.q0 * q.q2));
+		hy = 2.0f * (tmp.x * (q.q1 * q.q2 + q.q0 * q.q3) + tmp.y * (0.5f - q.q1 * q.q1 - q.q3 * q.q3) + tmp.z * (q.q2 * q.q3 - q.q0 * q.q1));
+		bx = sqrtf(hx * hx + hy * hy);
+		bz = 2.0f * (tmp.x * (q.q1 * q.q3 - q.q0 * q.q2) + tmp.y * (q.q2 * q.q3 + q.q0 * q.q1) + tmp.z * (0.5f - q.q1 * q.q1 - q.q2 * q.q2));
+
+		// Estimated direction of magnetic field
+		halfwx = bx * (0.5f - q.q2 * q.q2 - q.q3 * q.q3) + bz * (q.q1 * q.q3 - q.q0 * q.q2);
+		halfwy = bx * (q.q1 * q.q2 - q.q0 * q.q3) + bz * (q.q0 * q.q1 + q.q2 * q.q3);
+		halfwz = bx * (q.q0 * q.q2 + q.q1 * q.q3) + bz * (0.5f - q.q1 * q.q1 - q.q2 * q.q2);
+
+		// Normalize estimated reference field
+		float norm = invSqrt(halfwx * halfwx + halfwy * halfwy + halfwz * halfwz);
+		halfwx *= norm;
+		halfwy *= norm;
+		halfwz *= norm;
+
+		// Error is sum of cross product between estimated direction and measured direction of field vectors
+		ris->x += (tmp.y * halfwz - tmp.z * halfwy);
+		ris->y += (tmp.z * halfwx - tmp.x * halfwz);
+		ris->z += (tmp.x * halfwy - tmp.y * halfwx);
+	}
 }

@@ -11,13 +11,13 @@
 #include "ch.h"
 #include "hal.h"
 
-union Vector
-{
-    float x, y, z; /*use it as variable*/
-    float a[3]; /* or as a vector*/
-};
+#include "lsm303dlhc.h"
 
-void step(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
-float invSqrt(float x);
+static struct{
+	void (*get_estimated_error)(union quaternion, union vector3f*);
+}sensors_errors[] = { (&get_estimated_error_acce), (&get_estimated_error_magne) };
+
+void dcm_init(void);
+void dcm_step(union vector3f g);
 
 #endif /* DCM_H_ */

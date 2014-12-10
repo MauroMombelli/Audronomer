@@ -23,9 +23,9 @@
 
 #include "engine_db.h"
 
-#include "math.h"
-
 #include "read_thread.h"
+
+#include "dcm.h"
 
 /* External interrupt configuration */
 EXTConfig extcfg;
@@ -78,6 +78,8 @@ int main(void) {
 	chSysInit();
 
 	init_static_generics();
+
+	dcm_init();
 
 	sduObjectInit(&SDU1);
 	sduStart(&SDU1, &serusbcfg);
@@ -148,6 +150,8 @@ int main(void) {
 	uint16_t g = 0, m = 0, a = 0;
 
 	uint16_t tmpOut = -32768;
+
+
 	while (TRUE) {
 
 		//chThdSleepMicroseconds(5000); //MUST FIND A BETTER WAY!
@@ -164,6 +168,13 @@ int main(void) {
 			//chSequentialStreamPut((BaseSequentialStream * )&SDU1, 'G');
 			//chSequentialStreamWrite((BaseSequentialStream * )&SDU1, (const uint8_t * )&tmp_gyro, 6);
 			//chThdSleepMicroseconds(87 * 1);
+
+			union vector3f tmp;
+			tmp.x = tmp_gyro.x;
+			tmp.y = tmp_gyro.y;
+			tmp.z = tmp_gyro.z;
+			dcm_step(tmp);
+
 			tmpOut = -32768;
 			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
 			chSequentialStreamWrite(&SDU1, &tmp_gyro, 6);

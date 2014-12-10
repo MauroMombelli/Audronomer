@@ -12,6 +12,7 @@
 #include "hal.h"
 
 #include "engine_db.h"
+#include "my_math.h"
 
 msg_t gyroscope_init(void);
 msg_t gyroscope_read(void);

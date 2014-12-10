@@ -12,6 +12,7 @@
 #include "hal.h"
 
 #include "engine_db.h"
+#include "my_math.h"
 
 msg_t accelerometer_init(void);
 msg_t accelerometer_read(void);
@@ -22,5 +23,8 @@ uint8_t accelerometer_ext_pin(void);
 
 msg_t magnetometer_init(void);
 msg_t magnetometer_read(void);
+
+void get_estimated_error_acce (union quaternion, union vector3f*);
+void get_estimated_error_magne(union quaternion, union vector3f*);
 
 #endif /* LSM303DLH_H_ */
