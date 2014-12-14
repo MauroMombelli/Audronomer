@@ -170,10 +170,21 @@ int main(void) {
 			//chThdSleepMicroseconds(87 * 1);
 
 			union vector3f tmp;
-			tmp.x = tmp_gyro.x;
-			tmp.y = tmp_gyro.y;
-			tmp.z = tmp_gyro.z;
+			static const float dps = 17.5f;
+			static const float degree_to_radiant = 0.0174532925f;
+			tmp.x = ((tmp_gyro.x * dps)/1000.0)*degree_to_radiant;
+			tmp.y = ((tmp_gyro.y * dps)/1000.0)*degree_to_radiant;
+			tmp.z = ((tmp_gyro.z * dps)/1000.0)*degree_to_radiant;
 			dcm_step(tmp);
+
+			union quaternion q;
+
+			dcm_get_quaternion(&q);
+
+
+			tmpOut = -32762;
+			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
+			chSequentialStreamWrite(&SDU1, &q, 16);
 
 			tmpOut = -32768;
 			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
@@ -212,7 +223,7 @@ int main(void) {
 			a += diff;
 			lastUpdateA = update;
 			if (diff > 1) {
-				tmpOut = -32765;
+				tmpOut = -32764;
 				//USBSendData((uint8_t *) "ESLOWA", 6, tmo);
 				//USBSendData((uint8_t *) &diff, 1, tmo);
 				chSequentialStreamWrite(&SDU1, &tmpOut, 2);
@@ -240,7 +251,7 @@ int main(void) {
 			m += diff;
 			lastUpdateM = update;
 			if (diff > 1) {
-				tmpOut = -32765;
+				tmpOut = -32763;
 				//USBSendData((uint8_t *) "ESLOWM", 6, tmo);
 				//USBSendData((uint8_t *) &diff, 1, tmo);
 				chSequentialStreamWrite(&SDU1, &tmpOut, 2);

@@ -62,8 +62,9 @@ msg_t accelerometer_read(void) {
 	if (status == RDY_OK && (buffer_rx[0] & 0x8)) {
 		struct raw_accelerometer tmp;
 
-		tmp.x = ((int16_t) ((uint16_t) buffer_rx[1] << 8) + buffer_rx[2]);
-		tmp.y = ((int16_t) ((uint16_t) buffer_rx[3] << 8) + buffer_rx[4]);
+		//we use gyro as reference, deal with it!
+		tmp.y = -((int16_t) ((uint16_t) buffer_rx[1] << 8) + buffer_rx[2]);
+		tmp.x = ((int16_t) ((uint16_t) buffer_rx[3] << 8) + buffer_rx[4]);
 		tmp.z = ((int16_t) ((uint16_t) buffer_rx[5] << 8) + buffer_rx[6]);
 
 		put_raw_accelerometer(&tmp);
@@ -126,9 +127,9 @@ msg_t magnetometer_read(void) {
 	if (status == RDY_OK /*&& (buffer_rx[6] & 0x1) */) { //does not seems to work
 		struct raw_magnetometer tmp;
 
-		tmp.x = ((int16_t) ((uint16_t) buffer_rx[0] << 8) + buffer_rx[1]);
+		tmp.y = -((int16_t) ((uint16_t) buffer_rx[0] << 8) + buffer_rx[1]);
 		tmp.z = ((int16_t) ((uint16_t) buffer_rx[2] << 8) + buffer_rx[3]);
-		tmp.y = ((int16_t) ((uint16_t) buffer_rx[4] << 8) + buffer_rx[5]);
+		tmp.x = ((int16_t) ((uint16_t) buffer_rx[4] << 8) + buffer_rx[5]);
 
 		put_raw_magnetometer(&tmp);
 		/*

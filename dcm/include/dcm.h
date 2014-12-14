@@ -18,6 +18,7 @@ static struct{
 }sensors_errors[] = { (&get_estimated_error_acce), (&get_estimated_error_magne) };
 
 void dcm_init(void);
-void dcm_step(union vector3f g);
+void dcm_step(union vector3f);
+void dcm_get_quaternion(union quaternion *);
 
 #endif /* DCM_H_ */

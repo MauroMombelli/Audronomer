@@ -34,9 +34,10 @@ void dcm_step(union vector3f g) {
 	float recipNorm;
 
 	union vector3f halfe;
+	halfe.x = halfe.y = halfe.z = 0;
 
 	size_t i;
-	for (i=0; i<sizeof(sensors_errors);i++){//pay attention, sensors_errors must be NOT pointer
+	for (i=0; i<sizeof(sensors_errors)/sizeof(sensors_errors[0]);i++){//pay attention, sensors_errors must be NOT pointer
 		(*sensors_errors[i].get_estimated_error)(q, &halfe);
 	}
 
@@ -83,4 +84,11 @@ void dcm_step(union vector3f g) {
 	q.q1 *= recipNorm;
 	q.q2 *= recipNorm;
 	q.q3 *= recipNorm;
+}
+
+void dcm_get_quaternion(union quaternion *qRis){
+	int i=0;
+	for (i=0; i<4;i++){
+		qRis->q[i] = q.q[i];
+	}
 }
