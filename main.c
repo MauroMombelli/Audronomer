@@ -41,7 +41,6 @@ void unkonw_interrupt(EXTDriver *extp, expchannel_t channel) {
 
 }
 
-
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
 /* Virtual serial port over USB.*/
@@ -88,8 +87,10 @@ int main(void) {
 	usbStart(serusbcfg.usbp, &usbcfg);
 	usbConnectBus(serusbcfg.usbp);
 
+	chThdSleepMilliseconds(5000);
 
-	chSequentialStreamWrite(&SDU1, "start\r\n", 7);
+	chSequentialStreamWrite(&SDU1, (uint8_t * )"start", 5);
+
 	/*
 	 * Activates the serial driver 1, PA9 and PA10 are routed to USART1.
 	 */
@@ -100,13 +101,12 @@ int main(void) {
 	 palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7)); // USART1 RX.
 
 
-	sdStart(&SD1, &sd1_config);
-	*/
+	 sdStart(&SD1, &sd1_config);
+	 */
 	/*
 	 * Starts the transmission, it will be handled entirely in background.
 	 */
 	//uartStartSend(&UARTD1, 13, "Starting...\r\n");
-
 	//PREOPARE LED RED
 	palSetPadMode(GPIOE, GPIOE_LED3_RED, PAL_MODE_OUTPUT_PUSHPULL);
 
@@ -151,7 +151,6 @@ int main(void) {
 
 	uint16_t tmpOut = -32768;
 
-
 	while (TRUE) {
 
 		//chThdSleepMicroseconds(5000); //MUST FIND A BETTER WAY!
@@ -169,26 +168,9 @@ int main(void) {
 			//chSequentialStreamWrite((BaseSequentialStream * )&SDU1, (const uint8_t * )&tmp_gyro, 6);
 			//chThdSleepMicroseconds(87 * 1);
 
-			union vector3f tmp;
-			static const float dps = 17.5f;
-			static const float degree_to_radiant = 0.0174532925f;
-			tmp.x = ((tmp_gyro.x * dps)/1000.0)*degree_to_radiant;
-			tmp.y = ((tmp_gyro.y * dps)/1000.0)*degree_to_radiant;
-			tmp.z = ((tmp_gyro.z * dps)/1000.0)*degree_to_radiant;
-			dcm_step(tmp);
-
-			union quaternion q;
-
-			dcm_get_quaternion(&q);
-
-
-			tmpOut = -32762;
-			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
-			chSequentialStreamWrite(&SDU1, &q, 16);
-
 			tmpOut = -32768;
-			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
-			chSequentialStreamWrite(&SDU1, &tmp_gyro, 6);
+			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
+			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_gyro, 6);
 			//chThdSleepMicroseconds(87 * 6);
 
 			g += diff;
@@ -197,9 +179,23 @@ int main(void) {
 				//USBSendData((uint8_t *) "ESLOWG", 6, tmo);
 				//USBSendData((uint8_t *) &diff, 1, tmo);
 				tmpOut = -32765;
-				chSequentialStreamWrite(&SDU1, &tmpOut, 2);
-				chSequentialStreamWrite(&SDU1, &tmp_gyro, 6);
+				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
+				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_gyro, 6);
 			}
+
+			//time to run the DCM!
+			struct vector3f tmp;
+			const float dps = 17.5f;
+			const float degree_to_radiant = 0.0174532925f;
+			tmp.x = ((tmp_gyro.x * dps) / 1000.0) * degree_to_radiant;
+			tmp.y = ((tmp_gyro.y * dps) / 1000.0) * degree_to_radiant;
+			tmp.z = ((tmp_gyro.z * dps) / 1000.0) * degree_to_radiant;
+			dcm_step(tmp);
+			union quaternion q;
+			dcm_get_quaternion(&q);
+			tmpOut = -32762;
+			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
+			chSequentialStreamWrite(&SDU1, (uint8_t * )&q, 16);
 		}
 
 		update = get_raw_accelerometer(&tmp_acce);
@@ -217,8 +213,8 @@ int main(void) {
 			//chThdSleepMicroseconds(87 * 1);
 			//chSequentialStreamWrite(&SDU1, -32767, 2);
 			tmpOut = -32767;
-			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
-			chSequentialStreamWrite(&SDU1, &tmp_acce, 6);
+			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
+			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_acce, 6);
 			//chThdSleepMicroseconds(87 * 6);
 			a += diff;
 			lastUpdateA = update;
@@ -226,8 +222,8 @@ int main(void) {
 				tmpOut = -32764;
 				//USBSendData((uint8_t *) "ESLOWA", 6, tmo);
 				//USBSendData((uint8_t *) &diff, 1, tmo);
-				chSequentialStreamWrite(&SDU1, &tmpOut, 2);
-				chSequentialStreamWrite(&SDU1, &tmp_acce, 6);
+				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
+				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_acce, 6);
 			}
 		}
 
@@ -244,8 +240,8 @@ int main(void) {
 			//chThdSleepMicroseconds(87 * 1);
 			//chSequentialStreamWrite(&SDU1, -32766, 2);
 			tmpOut = -32766;
-			chSequentialStreamWrite(&SDU1, &tmpOut, 2);
-			chSequentialStreamWrite(&SDU1, &tmp_magne, 6);
+			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
+			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_magne, 6);
 			//chThdSleepMicroseconds(87 * 6);
 
 			m += diff;
@@ -254,8 +250,8 @@ int main(void) {
 				tmpOut = -32763;
 				//USBSendData((uint8_t *) "ESLOWM", 6, tmo);
 				//USBSendData((uint8_t *) &diff, 1, tmo);
-				chSequentialStreamWrite(&SDU1, &tmpOut, 2);
-				chSequentialStreamWrite(&SDU1, &tmp_magne, 6);
+				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
+				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_magne, 6);
 			}
 		}
 

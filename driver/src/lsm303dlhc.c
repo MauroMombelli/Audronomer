@@ -144,10 +144,14 @@ msg_t magnetometer_read(void) {
 	return status;
 }
 
-void get_estimated_error_acce(union quaternion q, union vector3f *ris) {
-	struct raw_accelerometer tmp;
-
-	uint8_t update = get_raw_accelerometer(&tmp);
+void get_estimated_error_acce(union quaternion q, struct vector3f *ris) {
+	struct raw_accelerometer tmpA;
+	uint8_t update = get_raw_accelerometer(&tmpA);
+	//to float
+	struct vector3f tmp;
+	tmp.x=tmpA.x;
+	tmp.y=tmpA.y;
+	tmp.z=tmpA.z;
 	if ((update-last_update_a > 0) && (tmp.x != 0.0f || tmp.y != 0.0f || tmp.z != 0.0f)) {
 		last_update_a = update;
 
@@ -160,9 +164,9 @@ void get_estimated_error_acce(union quaternion q, union vector3f *ris) {
 		tmp.z *= recipNorm;
 
 		// Estimated direction of gravity
-		halfvx = q.q1*q.q3 - q.q0*q.q2;
-		halfvy = q.q0*q.q1 + q.q2*q.q3;
-		halfvz = q.q0*q.q0 - 0.5f + q.q3*q.q3;
+		halfvx = q.q[1]*q.q[3] - q.q[0]*q.q[2];
+		halfvy = q.q[0]*q.q[1] + q.q[2]*q.q[3];
+		halfvz = q.q[0]*q.q[0] - 0.5f + q.q[3]*q.q[3];
 
 		// Error is sum of cross product between estimated direction and measured direction of field vectors
 		ris->x += (tmp.y * halfvz - tmp.z * halfvy);
@@ -175,11 +179,14 @@ void get_estimated_error_acce(union quaternion q, union vector3f *ris) {
 	}
 }
 
-void get_estimated_error_magne(union quaternion q, union vector3f *ris) {
-	struct raw_magnetometer tmp;
-
-	uint8_t update = get_raw_magnetometer(&tmp);
-
+void get_estimated_error_magne(union quaternion q, struct vector3f *ris) {
+	struct raw_magnetometer tmpM;
+	uint8_t update = get_raw_magnetometer(&tmpM);
+	//to float
+	struct vector3f tmp;
+	tmp.x=tmpM.x;
+	tmp.y=tmpM.y;
+	tmp.z=tmpM.z;
 	if ((update-last_update_m > 0) && (tmp.x != 0.0f || tmp.y != 0.0f || tmp.z != 0.0f)) {
 		last_update_m = update;
 
@@ -193,15 +200,15 @@ void get_estimated_error_magne(union quaternion q, union vector3f *ris) {
 		tmp.z *= recipNorm;
 
 		// Reference direction of Earth's magnetic field
-		hx = 2.0f * (tmp.x * (0.5f - q.q2 * q.q2 - q.q3 * q.q3) + tmp.y * (q.q1 * q.q2 - q.q0 * q.q3) + tmp.z * (q.q1 * q.q3 + q.q0 * q.q2));
-		hy = 2.0f * (tmp.x * (q.q1 * q.q2 + q.q0 * q.q3) + tmp.y * (0.5f - q.q1 * q.q1 - q.q3 * q.q3) + tmp.z * (q.q2 * q.q3 - q.q0 * q.q1));
+		hx = 2.0f * (tmp.x * (0.5f - q.q[2] * q.q[2] - q.q[3] * q.q[3]) + tmp.y * (q.q[1] * q.q[2] - q.q[0] * q.q[3]) + tmp.z * (q.q[1] * q.q[3] + q.q[0] * q.q[2]));
+		hy = 2.0f * (tmp.x * (q.q[1] * q.q[2] + q.q[0] * q.q[3]) + tmp.y * (0.5f - q.q[1] * q.q[1] - q.q[3] * q.q[3]) + tmp.z * (q.q[2] * q.q[3] - q.q[0] * q.q[1]));
 		bx = sqrtf(hx * hx + hy * hy);
-		bz = 2.0f * (tmp.x * (q.q1 * q.q3 - q.q0 * q.q2) + tmp.y * (q.q2 * q.q3 + q.q0 * q.q1) + tmp.z * (0.5f - q.q1 * q.q1 - q.q2 * q.q2));
+		bz = 2.0f * (tmp.x * (q.q[1] * q.q[3] - q.q[0] * q.q[2]) + tmp.y * (q.q[2] * q.q[3] + q.q[0] * q.q[1]) + tmp.z * (0.5f - q.q[1] * q.q[1] - q.q[2] * q.q[2]));
 
 		// Estimated direction of magnetic field
-		halfwx = bx * (0.5f - q.q2 * q.q2 - q.q3 * q.q3) + bz * (q.q1 * q.q3 - q.q0 * q.q2);
-		halfwy = bx * (q.q1 * q.q2 - q.q0 * q.q3) + bz * (q.q0 * q.q1 + q.q2 * q.q3);
-		halfwz = bx * (q.q0 * q.q2 + q.q1 * q.q3) + bz * (0.5f - q.q1 * q.q1 - q.q2 * q.q2);
+		halfwx = bx * (0.5f - q.q[2] * q.q[2] - q.q[3] * q.q[3]) + bz * (q.q[1] * q.q[3] - q.q[0] * q.q[2]);
+		halfwy = bx * (q.q[1] * q.q[2] - q.q[0] * q.q[3]) + bz * (q.q[0] * q.q[1] + q.q[2] * q.q[3]);
+		halfwz = bx * (q.q[0] * q.q[2] + q.q[1] * q.q[3]) + bz * (0.5f - q.q[1] * q.q[1] - q.q[2] * q.q[2]);
 
 		// Normalize estimated reference field
 		float norm = invSqrt(halfwx * halfwx + halfwy * halfwy + halfwz * halfwz);

@@ -24,7 +24,7 @@ uint8_t accelerometer_ext_pin(void);
 msg_t magnetometer_init(void);
 msg_t magnetometer_read(void);
 
-void get_estimated_error_acce (union quaternion, union vector3f*);
-void get_estimated_error_magne(union quaternion, union vector3f*);
+void get_estimated_error_acce (union quaternion, struct vector3f*);
+void get_estimated_error_magne(union quaternion, struct vector3f*);
 
 #endif /* LSM303DLH_H_ */

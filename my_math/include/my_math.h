@@ -10,16 +10,14 @@
 
 #include <math.h>
 
-union vector3f
+struct vector3f
 {
-    float x, y, z; /*use it as variable*/
-    float v[3]; /* or as a vector*/
+	float x, y, z;
 };
 
 union quaternion
 {
-    float q0, q1, q2, q3; /*use it as variable*/
-    float q[4]; /* or as a vector*/
+    float q[4];
 };
 
 float invSqrt(float x);

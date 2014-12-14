@@ -20,7 +20,7 @@ float sample_freq = 767;
 union quaternion q;
 
 /* integral result */
-union vector3f integralFB;
+struct vector3f integralFB;
 
 void dcm_init(){
 	q.q[0] = 1;
@@ -29,15 +29,15 @@ void dcm_init(){
 	integralFB.x = integralFB.y = integralFB.z = 0;
 }
 
-void dcm_step(union vector3f g) {
+void dcm_step(struct vector3f g) {
 
 	float recipNorm;
 
-	union vector3f halfe;
+	struct vector3f halfe;
 	halfe.x = halfe.y = halfe.z = 0;
 
 	size_t i;
-	for (i=0; i<sizeof(sensors_errors)/sizeof(sensors_errors[0]);i++){//pay attention, sensors_errors must be NOT pointer
+	for (i=0; i<sizeof(sensors_errors)/sizeof(sensors_errors[0]);i++){//pay attention, sensors_errors must NOT be pointer
 		(*sensors_errors[i].get_estimated_error)(q, &halfe);
 	}
 
@@ -62,6 +62,8 @@ void dcm_step(union vector3f g) {
 		g.x += twoKp * halfe.x;
 		g.y += twoKp * halfe.y;
 		g.z += twoKp * halfe.z;
+	}else{
+		return;
 	}
 
 	// Integrate rate of change of quaternion
@@ -70,20 +72,20 @@ void dcm_step(union vector3f g) {
 	g.z *= (0.5f * (1.0f / sample_freq));
 
 	float qa, qb, qc;
-	qa = q.q0;
-	qb = q.q1;
-	qc = q.q2;
-	q.q0 += (-qb * g.x - qc * g.y - q.q3 * g.z);
-	q.q1 += (qa * g.x + qc * g.z - q.q3 * g.y);
-	q.q2 += (qa * g.y - qb * g.z + q.q3 * g.x);
-	q.q3 += (qa * g.z + qb * g.y - qc * g.x);
+	qa = q.q[0];
+	qb = q.q[1];
+	qc = q.q[2];
+	q.q[0] += (-qb * g.x - qc * g.y - q.q[3] * g.z);
+	q.q[1] += (qa * g.x + qc * g.z - q.q[3] * g.y);
+	q.q[2] += (qa * g.y - qb * g.z + q.q[3] * g.x);
+	q.q[3] += (qa * g.z + qb * g.y - qc * g.x);
 
 	// Normalise quaternion
-	recipNorm = invSqrt(q.q0 * q.q0 + q.q1 * q.q1 + q.q2 * q.q2 + q.q3 * q.q3);
-	q.q0 *= recipNorm;
-	q.q1 *= recipNorm;
-	q.q2 *= recipNorm;
-	q.q3 *= recipNorm;
+	recipNorm = invSqrt(q.q[0] * q.q[0] + q.q[1] * q.q[1] + q.q[2] * q.q[2] + q.q[3] * q.q[3]);
+	q.q[0] *= recipNorm;
+	q.q[1] *= recipNorm;
+	q.q[2] *= recipNorm;
+	q.q[3] *= recipNorm;
 }
 
 void dcm_get_quaternion(union quaternion *qRis){
