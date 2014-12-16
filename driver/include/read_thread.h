@@ -58,15 +58,19 @@ static msg_t readThread(void *arg) {
 		//start = halGetCounterValue();
 
 		if ( (event & (EVENT_ACCE_READY) ) != 0) {
-			accelerometer_read();
+			//TODO: why accelerometer does not work with its interrupt?
+			//TODO: debug
+			//accelerometer_read();
 		}
 
 		if ( (event & EVENT_MAGN_READY) != 0 ){
+			//TODO: debug
 			magnetometer_read();
 		}
 
 		if ( (event & EVENT_GYRO_READY) != 0) {
 			gyroscope_read();
+			//TODO: why accelerometer does not work with its interrupt?
 			accelerometer_read();
 		}
 	}

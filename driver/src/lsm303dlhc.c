@@ -63,9 +63,9 @@ msg_t accelerometer_read(void) {
 		struct raw_accelerometer tmp;
 
 		//we use gyro as reference, deal with it!
-		tmp.y = -((int16_t) ((uint16_t) buffer_rx[1] << 8) + buffer_rx[2]);
-		tmp.x = ((int16_t) ((uint16_t) buffer_rx[3] << 8) + buffer_rx[4]);
-		tmp.z = ((int16_t) ((uint16_t) buffer_rx[5] << 8) + buffer_rx[6]);
+		tmp.y = -((int16_t) ((uint16_t) buffer_rx[2] << 8) + buffer_rx[1]);
+		tmp.x = ((int16_t) ((uint16_t) buffer_rx[4] << 8) + buffer_rx[3]);
+		tmp.z = ((int16_t) ((uint16_t) buffer_rx[6] << 8) + buffer_rx[5]);
 
 		put_raw_accelerometer(&tmp);
 
@@ -149,11 +149,12 @@ void get_estimated_error_acce(union quaternion q, struct vector3f *ris) {
 	uint8_t update = get_raw_accelerometer(&tmpA);
 	//to float
 	struct vector3f tmp;
-	tmp.x=tmpA.x;
-	tmp.y=tmpA.y;
-	tmp.z=tmpA.z;
+	tmp.x = tmpA.x;
+	tmp.y = tmpA.y;
+	tmp.z = tmpA.z;
+	update -=last_update_a;//now in update there is the diff
 	if ((update-last_update_a > 0) && (tmp.x != 0.0f || tmp.y != 0.0f || tmp.z != 0.0f)) {
-		last_update_a = update;
+		last_update_a += update;//now last_update_a is equal to update prior the diff
 
 		float halfvx, halfvy, halfvz;
 
@@ -187,8 +188,9 @@ void get_estimated_error_magne(union quaternion q, struct vector3f *ris) {
 	tmp.x=tmpM.x;
 	tmp.y=tmpM.y;
 	tmp.z=tmpM.z;
-	if ((update-last_update_m > 0) && (tmp.x != 0.0f || tmp.y != 0.0f || tmp.z != 0.0f)) {
-		last_update_m = update;
+	update -=last_update_m;//now in update there is the diff
+	if ((update > 0) && (tmp.x != 0.0f || tmp.y != 0.0f || tmp.z != 0.0f)) {
+		last_update_m += update;//now last_update_m is equal to update prior the diff
 
 		float hx, hy, bx, bz;
 		float halfwx, halfwy, halfwz;

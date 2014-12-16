@@ -87,9 +87,9 @@ int main(void) {
 	usbStart(serusbcfg.usbp, &usbcfg);
 	usbConnectBus(serusbcfg.usbp);
 
-	chThdSleepMilliseconds(5000);
+	chThdSleepMilliseconds(2000);
 
-	chSequentialStreamWrite(&SDU1, (uint8_t * )"start", 5);
+	SDU1.vmt->writet(&SDU1, (uint8_t * )"start", 5, 1000);
 
 	/*
 	 * Activates the serial driver 1, PA9 and PA10 are routed to USART1.
@@ -141,89 +141,71 @@ int main(void) {
 
 	systime_t start = chTimeNow(), elapsed;
 
-	uint8_t lastUpdateG = 0, lastUpdateA = 0, lastUpdateM = 0;
+	uint8_t lastUpdateG = 0;
+	uint8_t lastUpdateA = 0, lastUpdateM = 0;
 	struct raw_gyroscope tmp_gyro;
 	struct raw_accelerometer tmp_acce;
 	struct raw_magnetometer tmp_magne;
 
 	uint8_t update, diff;
-	uint16_t g = 0, m = 0, a = 0;
+	uint16_t g = 0;
+	uint16_t m = 0, a = 0;
 
 	uint16_t tmpOut = -32768;
 
 	while (TRUE) {
 
-		//chThdSleepMicroseconds(5000); //MUST FIND A BETTER WAY!
-
+		//maybe an interrupt is better :)
 		chThdYield();
-
 		update = get_raw_gyroscope(&tmp_gyro);
 
 		diff = update - lastUpdateG;
+
+		systime_t timeout_write = 10;
 		if (diff) {
-			//USBSendData((uint8_t *) "G", 1, tmo);
-			//USBSendData((uint8_t *) &tmp_gyro, 2 * 3, tmo);		//2 byte x 3 value
-			//chprintf((BaseSequentialStream *)&SDU1, "G%" PRIu16 " %" PRIu16 " %" PRIu16 "\n", tmp_gyro.x, tmp_gyro.y, tmp_gyro.z );
-			//chSequentialStreamPut((BaseSequentialStream * )&SDU1, 'G');
-			//chSequentialStreamWrite((BaseSequentialStream * )&SDU1, (const uint8_t * )&tmp_gyro, 6);
-			//chThdSleepMicroseconds(87 * 1);
+			lastUpdateG = update;
 
 			tmpOut = -32768;
-			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
-			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_gyro, 6);
-			//chThdSleepMicroseconds(87 * 6);
+			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
+			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_gyro, 6, timeout_write);
 
 			g += diff;
-			lastUpdateG = update;
-			if (diff > 1) {
-				//USBSendData((uint8_t *) "ESLOWG", 6, tmo);
-				//USBSendData((uint8_t *) &diff, 1, tmo);
-				tmpOut = -32765;
-				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
-				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_gyro, 6);
-			}
 
+			if (diff > 1) {
+				tmpOut = -32765;
+				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_gyro, 6, timeout_write);
+			}
+/*
 			//time to run the DCM!
 			struct vector3f tmp;
 			const float dps = 17.5f;
 			const float degree_to_radiant = 0.0174532925f;
-			tmp.x = ((tmp_gyro.x * dps) / 1000.0) * degree_to_radiant;
-			tmp.y = ((tmp_gyro.y * dps) / 1000.0) * degree_to_radiant;
-			tmp.z = ((tmp_gyro.z * dps) / 1000.0) * degree_to_radiant;
+			tmp.x = ( (tmp_gyro.x * dps) / 1000.0 ) * degree_to_radiant;
+			tmp.y = ( (tmp_gyro.y * dps) / 1000.0 ) * degree_to_radiant;
+			tmp.z = ( (tmp_gyro.z * dps) / 1000.0 ) * degree_to_radiant;
 			dcm_step(tmp);
 			union quaternion q;
 			dcm_get_quaternion(&q);
 			tmpOut = -32762;
-			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
-			chSequentialStreamWrite(&SDU1, (uint8_t * )&q, 16);
+			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
+			SDU1.vmt->writet(&SDU1, (uint8_t * )&q, 16, timeout_write);
+*/
 		}
 
 		update = get_raw_accelerometer(&tmp_acce);
 
 		diff = update - lastUpdateA;
 		if (diff) {
-			//USBSendData((uint8_t *) "A", 1, tmo);
-			//USBSendData((uint8_t *) &tmp_acce, 2 * 3, tmo);		//2 byte x 3 value
-			//chprintf((BaseSequentialStream *)&SDU1, "A%" PRIu16 " %" PRIu16 " %" PRIu16 "\n", tmp_acce.x, tmp_acce.y, tmp_acce.z );
-			//chSequentialStreamPut((BaseSequentialStream * )&SDU1, 'A');
-			//chSequentialStreamWrite((BaseSequentialStream * )&SDU1, (const uint8_t * )&tmp_acce, 6);
-			//uartStartSend(&UARTD1, 1, "A");
-			//uartStartSend(&UARTD1, 6, &tmp_gyro);
-			//chSequentialStreamWrite(&SDU1, "A", 1);
-			//chThdSleepMicroseconds(87 * 1);
-			//chSequentialStreamWrite(&SDU1, -32767, 2);
 			tmpOut = -32767;
-			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
-			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_acce, 6);
-			//chThdSleepMicroseconds(87 * 6);
+			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
+			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_acce, 6, timeout_write);
 			a += diff;
 			lastUpdateA = update;
 			if (diff > 1) {
 				tmpOut = -32764;
-				//USBSendData((uint8_t *) "ESLOWA", 6, tmo);
-				//USBSendData((uint8_t *) &diff, 1, tmo);
-				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
-				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_acce, 6);
+				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_acce, 6, timeout_write);
 			}
 		}
 
@@ -231,27 +213,16 @@ int main(void) {
 
 		diff = update - lastUpdateM;
 		if (diff) {
-			//USBSendData((uint8_t *) "M", 1, tmo);
-			//USBSendData((uint8_t *) &tmp_magne, 2 * 3, tmo);		//2 byte x 3 value
-			//chprintf((BaseSequentialStream *)&SDU1, "M%" PRIu16 " %" PRIu16 " %" PRIu16 "\n", tmp_magne.x, tmp_magne.y, tmp_magne.z );
-			//chSequentialStreamPut((BaseSequentialStream * )&SDU1, 'M');
-			//chSequentialStreamWrite((BaseSequentialStream * )&SDU1, (const uint8_t * )&tmp_magne, 6);
-			//chSequentialStreamWrite(&SDU1, "M", 1);
-			//chThdSleepMicroseconds(87 * 1);
-			//chSequentialStreamWrite(&SDU1, -32766, 2);
 			tmpOut = -32766;
-			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
-			chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_magne, 6);
-			//chThdSleepMicroseconds(87 * 6);
+			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
+			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_magne, 6, timeout_write);
 
 			m += diff;
 			lastUpdateM = update;
 			if (diff > 1) {
 				tmpOut = -32763;
-				//USBSendData((uint8_t *) "ESLOWM", 6, tmo);
-				//USBSendData((uint8_t *) &diff, 1, tmo);
-				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmpOut, 2);
-				chSequentialStreamWrite(&SDU1, (uint8_t * )&tmp_magne, 6);
+				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_magne, 6, timeout_write);
 			}
 		}
 

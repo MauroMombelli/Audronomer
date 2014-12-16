@@ -13,7 +13,7 @@ float twoKp = 2.0f * 0.5f;
 float twoKi = 2.0f * 0.0f;
 
 /* frequency of sensor reading */
-float sample_freq = 767;
+const float sample_freq = 1536/2.0;
 
 /* Quaternion */
 //float q0 = 1, q1 = 0, q2 = 0, q3 = 0;
@@ -51,19 +51,12 @@ void dcm_step(struct vector3f g) {
 			g.x += integralFB.x;  // apply integral feedback
 			g.y += integralFB.y;
 			g.z += integralFB.z;
-		} /*TODO: why is this here?
-		else {
-			integralFBx = 0.0f; // prevent integral windup
-			integralFBy = 0.0f;
-			integralFBz = 0.0f;
-		}*/
+		}
 
 		// Apply proportional feedback
 		g.x += twoKp * halfe.x;
 		g.y += twoKp * halfe.y;
 		g.z += twoKp * halfe.z;
-	}else{
-		return;
 	}
 
 	// Integrate rate of change of quaternion

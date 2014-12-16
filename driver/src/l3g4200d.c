@@ -68,9 +68,9 @@ msg_t gyroscope_read(void) {
 
 		struct raw_gyroscope tmp;
 
-		tmp.x = ((uint16_t)rxbuf[3] << 8) | rxbuf[2];
-		tmp.y = ((uint16_t)rxbuf[5] << 8) | rxbuf[4];
-		tmp.z = ((uint16_t)rxbuf[7] << 8) | rxbuf[6];
+		tmp.x = ((uint16_t)rxbuf[2] << 8) | rxbuf[3];
+		tmp.y = ((uint16_t)rxbuf[4] << 8) | rxbuf[5];
+		tmp.z = ((uint16_t)rxbuf[6] << 8) | rxbuf[7];
 
 		put_raw_gyroscope(&tmp);
 
