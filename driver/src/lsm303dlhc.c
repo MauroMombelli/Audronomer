@@ -87,7 +87,7 @@ uint8_t accelerometer_ext_pin(void) {
 
 msg_t magnetometer_init(void) {
 	//magne
-	uint8_t buffer_tx_mag[] = { 0x00, 0x18, 0x01, 0xE0, 0x02, 0x00 };
+	uint8_t buffer_tx_mag[] = { 0x00, 0x18, 0x01, 0x40, 0x02, 0x00 };
 
 	systime_t tmo = MS2ST(4);
 
@@ -128,7 +128,8 @@ msg_t magnetometer_read(void) {
 		struct raw_magnetometer tmp;
 
 		tmp.y = -((int16_t) ((uint16_t) buffer_rx[0] << 8) + buffer_rx[1]);
-		tmp.z = ((int16_t) ((uint16_t) buffer_rx[2] << 8) + buffer_rx[3]);
+		//z axes is in different register order tha others sensors, AND use different gain. fuck that, and this, and that too.
+		tmp.z = ((int16_t) ((uint16_t) buffer_rx[2] << 8) + buffer_rx[3])*1.12f;
 		tmp.x = ((int16_t) ((uint16_t) buffer_rx[4] << 8) + buffer_rx[5]);
 
 		put_raw_magnetometer(&tmp);
