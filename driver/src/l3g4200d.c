@@ -27,7 +27,9 @@ msg_t gyroscope_init(void) {
 
 	spiSelect(&SPID1);
 	txbuf[0] = 0x20;
-	txbuf[1] = 0b11001111; //ODR 800Hz, normal mode, 3 axis reading
+	//txbuf[1] = 0b11001111; //ODR 800Hz, cut off 30, normal mode, 3 axis reading
+	//txbuf[1] = 0b11111111; //ODR 800Hz, cut off 110, normal mode, 3 axis reading
+	txbuf[1] = 0b10111111; //ODR 400Hz, cut off 110, normal mode, 3 axis reading
 	spiExchange(&SPID1, 2, txbuf, rxbuf);//write
 	spiUnselect(&SPID1);
 
