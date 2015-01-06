@@ -49,9 +49,9 @@ SerialUSBDriver SDU1;
 struct {
 	const uint16_t START_FREQUENCY;
 	uint16_t packet_sent;
-	const uint8_t START[4];
+	const uint8_t START[8];
 } commProtocol = {
-		.START={0xff, 0xff, 0xff, 0xff},
+		.START={0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
 		.START_FREQUENCY = 5000,
 		.packet_sent=0
 };
