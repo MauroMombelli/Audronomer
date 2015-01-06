@@ -1,6 +1,7 @@
 #include "engine_db.h"
 
 static Mutex mtx;
+static uint8_t update_number[sizeof(generic)/sizeof(generic[0])] = {0};
 
 void init_static_generics(void){
 	chMtxInit(&mtx);

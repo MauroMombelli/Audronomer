@@ -46,6 +46,58 @@ void unkonw_interrupt(EXTDriver *extp, expchannel_t channel) {
 /* Virtual serial port over USB.*/
 SerialUSBDriver SDU1;
 
+struct {
+	const uint16_t START_FREQUENCY;
+	uint16_t packet_sent;
+	const uint8_t START[4];
+} commProtocol = {
+		.START={0xff, 0xff, 0xff, 0xff},
+		.START_FREQUENCY = 5000,
+		.packet_sent=0
+};
+
+void usb_init(void) {
+	sduObjectInit(&SDU1);
+	sduStart(&SDU1, &serusbcfg);
+	usbDisconnectBus(serusbcfg.usbp);
+	chThdSleepMilliseconds(1000);
+	usbStart(serusbcfg.usbp, &usbcfg);
+	usbConnectBus(serusbcfg.usbp);
+
+	chThdSleepMilliseconds(2000);
+}
+
+void protocol_send_start(void){
+	SDU1.vmt->writet(&SDU1, commProtocol.START, sizeof(commProtocol.START), 1000);
+}
+
+void protocol_send (uint8_t type, uint8_t* data, size_t size){
+	commProtocol.packet_sent++;
+	if (commProtocol.packet_sent >= commProtocol.START_FREQUENCY){
+		protocol_send_start();
+	}
+	SDU1.vmt->writet(&SDU1, &type, 1, 1000);
+	SDU1.vmt->writet(&SDU1, data, size, 1000);
+}
+
+void send_gyro(struct raw_gyroscope* tmp){
+	protocol_send('g', (uint8_t *)tmp, 6);
+}
+
+void send_acce(struct raw_accelerometer* tmp){
+	protocol_send('a', (uint8_t *)tmp, 6);
+}
+
+void send_magne( struct raw_magnetometer* tmp){
+	protocol_send('m', (uint8_t *)tmp, 6);
+}
+
+void i2c_init(void){
+	/* set pin for i2c */
+	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* SCL */
+	palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* SDA */
+}
+
 int main(void) {
 	//setup external interrupt channels
 	uint8_t i;
@@ -78,42 +130,14 @@ int main(void) {
 
 	init_static_generics();
 
+	i2c_init();
+
 	dcm_init();
 
-	sduObjectInit(&SDU1);
-	sduStart(&SDU1, &serusbcfg);
-	usbDisconnectBus(serusbcfg.usbp);
-	chThdSleepMilliseconds(1000);
-	usbStart(serusbcfg.usbp, &usbcfg);
-	usbConnectBus(serusbcfg.usbp);
+	usb_init();
 
-	chThdSleepMilliseconds(2000);
-
-	SDU1.vmt->writet(&SDU1, (uint8_t * )"start", 5, 1000);
-
-	/*
-	 * Activates the serial driver 1, PA9 and PA10 are routed to USART1.
-	 */
-	/*
-	 uartObjectInit(&UARTD1);
-	 uartStart(&UARTD1, &uart_cfg_1);
-	 palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(7)); // USART1 TX.
-	 palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7)); // USART1 RX.
-
-
-	 sdStart(&SD1, &sd1_config);
-	 */
-	/*
-	 * Starts the transmission, it will be handled entirely in background.
-	 */
-	//uartStartSend(&UARTD1, 13, "Starting...\r\n");
-	//PREOPARE LED RED
+	//PREPARE LED RED
 	palSetPadMode(GPIOE, GPIOE_LED3_RED, PAL_MODE_OUTPUT_PUSHPULL);
-
-	/* set pin for i2c */
-	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* SCL */
-	palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* SDA */
-
 	palSetPad(GPIOE, GPIOE_LED3_RED);
 
 	/*
@@ -132,6 +156,8 @@ int main(void) {
 		extChannelEnable(&EXTD1, i);
 	}
 
+
+	protocol_send_start();
 	/*
 	 * LETS THE LOGIC BEGIN
 	 */
@@ -151,8 +177,6 @@ int main(void) {
 	uint16_t g = 0;
 	uint16_t m = 0, a = 0;
 
-	uint16_t tmpOut = -32768;
-
 	while (TRUE) {
 
 		//maybe an interrupt is better :)
@@ -161,69 +185,69 @@ int main(void) {
 
 		diff = update - lastUpdateG;
 
-		systime_t timeout_write = 10;
 		if (diff) {
 			lastUpdateG = update;
 
-			tmpOut = -32768;
-			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
-			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_gyro, 6, timeout_write);
+			send_gyro(&tmp_gyro);
 
 			g += diff;
 
+			/*
 			if (diff > 1) {
 				tmpOut = -32765;
-				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
-				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_gyro, 6, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_gyro, 6, timeout_write);
 			}
-/*
-			//time to run the DCM!
-			struct vector3f tmp;
-			const float dps = 17.5f;
-			const float degree_to_radiant = 0.0174532925f;
-			tmp.x = ( (tmp_gyro.x * dps) / 1000.0 ) * degree_to_radiant;
-			tmp.y = ( (tmp_gyro.y * dps) / 1000.0 ) * degree_to_radiant;
-			tmp.z = ( (tmp_gyro.z * dps) / 1000.0 ) * degree_to_radiant;
-			dcm_step(tmp);
-			union quaternion q;
-			dcm_get_quaternion(&q);
-			tmpOut = -32762;
-			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
-			SDU1.vmt->writet(&SDU1, (uint8_t * )&q, 16, timeout_write);
-*/
+			 //time to run the DCM!
+			 struct vector3f tmp;
+			 const float dps = 17.5f;
+			 const float degree_to_radiant = 0.0174532925f;
+			 tmp.x = ( (tmp_gyro.x * dps) / 1000.0 ) * degree_to_radiant;
+			 tmp.y = ( (tmp_gyro.y * dps) / 1000.0 ) * degree_to_radiant;
+			 tmp.z = ( (tmp_gyro.z * dps) / 1000.0 ) * degree_to_radiant;
+			 dcm_step(tmp);
+			 union quaternion q;
+			 dcm_get_quaternion(&q);
+			 tmpOut = -32762;
+			 SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
+			 SDU1.vmt->writet(&SDU1, (uint8_t * )&q, 16, timeout_write);
+			 */
 		}
 
 		update = get_raw_accelerometer(&tmp_acce);
 
 		diff = update - lastUpdateA;
 		if (diff) {
-			tmpOut = -32767;
-			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
-			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_acce, 6, timeout_write);
-			a += diff;
 			lastUpdateA = update;
+			a += diff;
+
+			send_acce(&tmp_acce);
+
+			/*
 			if (diff > 1) {
 				tmpOut = -32764;
-				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
-				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_acce, 6, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_acce, 6, timeout_write);
 			}
+			*/
 		}
 
 		update = get_raw_magnetometer(&tmp_magne);
 
 		diff = update - lastUpdateM;
 		if (diff) {
-			tmpOut = -32766;
-			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
-			SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_magne, 6, timeout_write);
-
 			m += diff;
 			lastUpdateM = update;
+
+			send_magne(&tmp_magne);
+
+			/*
 			if (diff > 1) {
 				tmpOut = -32763;
-				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
-				SDU1.vmt->writet(&SDU1, (uint8_t * )&tmp_magne, 6, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_magne, 6, timeout_write);
 			}
+			*/
 		}
 
 		elapsed = chTimeElapsedSince(start);

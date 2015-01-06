@@ -22,6 +22,8 @@ union quaternion q;
 /* integral result */
 struct vector3f integralFB;
 
+static struct errori sensors_errors[] = { {&get_estimated_error_acce}, {&get_estimated_error_magne} };
+
 void dcm_init(){
 	q.q[0] = 1;
 	q.q[1] = q.q[2] = q.q[3] = 0;
