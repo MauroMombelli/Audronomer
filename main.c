@@ -75,6 +75,7 @@ void protocol_send (uint8_t type, uint8_t* data, size_t size){
 	commProtocol.packet_sent++;
 	if (commProtocol.packet_sent >= commProtocol.START_FREQUENCY){
 		protocol_send_start();
+		commProtocol.packet_sent=0;
 	}
 	SDU1.vmt->writet(&SDU1, &type, 1, 1000);
 	SDU1.vmt->writet(&SDU1, data, size, 1000);
