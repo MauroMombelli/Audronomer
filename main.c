@@ -13,13 +13,12 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
+
 #include <stdlib.h>
 #include <inttypes.h>
 
 #include "ch.h"
 #include "hal.h"
-
-#include "usbcfg.h"
 
 #include "engine_db.h"
 
@@ -43,57 +42,60 @@ void unkonw_interrupt(EXTDriver *extp, expchannel_t channel) {
 
 #define usb_lld_connect_bus(usbp)
 #define usb_lld_disconnect_bus(usbp)
-/* Virtual serial port over USB.*/
-SerialUSBDriver SDU1;
 
 struct {
 	const uint16_t START_FREQUENCY;
 	uint16_t packet_sent;
 	const uint8_t START[8];
-} commProtocol = {
-		.START={0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
-		.START_FREQUENCY = 5000,
-		.packet_sent=0
-};
-
+} commProtocol = { .START = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, .START_FREQUENCY = 1000, .packet_sent = 0 };
+/*
 void usb_init(void) {
 	sduObjectInit(&SDU1);
 	sduStart(&SDU1, &serusbcfg);
 	usbDisconnectBus(serusbcfg.usbp);
-	chThdSleepMilliseconds(1000);
+
+	chThdSleepMilliseconds(1500);
+
 	usbStart(serusbcfg.usbp, &usbcfg);
 	usbConnectBus(serusbcfg.usbp);
 
-	chThdSleepMilliseconds(2000);
+	chThdSleepMilliseconds(1500);
+}
+*/
+void protocol_send_start(void) {
+	//SDU1.vmt->writet(&SDU1, commProtocol.START, sizeof(commProtocol.START), 1000);
+	//chIOPut(&SD1, i);
+	chnWriteTimeout(&SD1, commProtocol.START, sizeof(commProtocol.START), 1000);
+	//uartStartSend(&UARTD1, sizeof(commProtocol.START), commProtocol.START);
 }
 
-void protocol_send_start(void){
-	SDU1.vmt->writet(&SDU1, commProtocol.START, sizeof(commProtocol.START), 1000);
-}
-
-void protocol_send (uint8_t type, uint8_t* data, size_t size){
+void protocol_send(uint8_t type, uint8_t* data, size_t size) {
 	commProtocol.packet_sent++;
-	if (commProtocol.packet_sent >= commProtocol.START_FREQUENCY){
+	if (commProtocol.packet_sent >= commProtocol.START_FREQUENCY) {
 		protocol_send_start();
-		commProtocol.packet_sent=0;
+		commProtocol.packet_sent = 0;
 	}
-	SDU1.vmt->writet(&SDU1, &type, 1, 1000);
-	SDU1.vmt->writet(&SDU1, data, size, 1000);
+	//SDU1.vmt->writet(&SDU1, &type, 1, 1000);
+	//SDU1.vmt->writet(&SDU1, data, size, 1000);
+	chnWriteTimeout(&SD1, &type, 1, 1000);
+	chnWriteTimeout(&SD1, data, size, 1000);
+	//uartStartSend(&UARTD1, 1, &type);
+	//uartStartSend(&UARTD1, size, data);
 }
 
-void send_gyro(struct raw_gyroscope* tmp){
-	protocol_send('g', (uint8_t *)tmp, 6);
+void send_gyro(struct raw_gyroscope* tmp) {
+	protocol_send('g', (uint8_t *) tmp, 6);
 }
 
-void send_acce(struct raw_accelerometer* tmp){
-	protocol_send('a', (uint8_t *)tmp, 6);
+void send_acce(struct raw_accelerometer* tmp) {
+	protocol_send('a', (uint8_t *) tmp, 6);
 }
 
-void send_magne( struct raw_magnetometer* tmp){
-	protocol_send('m', (uint8_t *)tmp, 6);
+void send_magne(struct raw_magnetometer* tmp) {
+	protocol_send('m', (uint8_t *) tmp, 6);
 }
 
-void i2c_init(void){
+void i2c_init(void) {
 	/* set pin for i2c */
 	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* SCL */
 	palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* SDA */
@@ -135,11 +137,19 @@ int main(void) {
 
 	dcm_init();
 
-	usb_init();
+	//usb_init();
+
+	//uartStart(&UARTD1, &uart_cfg_1);
+
+	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(7)); // used function : USART1_TX
+	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7)); // used function : USART1_RX
+
+	sdInit();
+
+	sdStart(&SD1, NULL);
 
 	//PREPARE LED RED
-	palSetPadMode(GPIOE, GPIOE_LED3_RED, PAL_MODE_OUTPUT_PUSHPULL);
-	palSetPad(GPIOE, GPIOE_LED3_RED);
+	palSetPadMode(GPIOE, GPIOE_LED3_RED, PAL_MODE_OUTPUT_PUSHPULL);palSetPad(GPIOE, GPIOE_LED3_RED);
 
 	/*
 	 * START READ THREAD
@@ -156,7 +166,6 @@ int main(void) {
 	for (i = 0; i < EXT_MAX_CHANNELS; i++) {
 		extChannelEnable(&EXTD1, i);
 	}
-
 
 	protocol_send_start();
 	/*
@@ -194,11 +203,11 @@ int main(void) {
 			g += diff;
 
 			/*
-			if (diff > 1) {
-				tmpOut = -32765;
-				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
-				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_gyro, 6, timeout_write);
-			}
+			 if (diff > 1) {
+			 tmpOut = -32765;
+			 SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
+			 SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_gyro, 6, timeout_write);
+			 }
 			 //time to run the DCM!
 			 struct vector3f tmp;
 			 const float dps = 17.5f;
@@ -225,12 +234,12 @@ int main(void) {
 			send_acce(&tmp_acce);
 
 			/*
-			if (diff > 1) {
-				tmpOut = -32764;
-				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
-				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_acce, 6, timeout_write);
-			}
-			*/
+			 if (diff > 1) {
+			 tmpOut = -32764;
+			 SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
+			 SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_acce, 6, timeout_write);
+			 }
+			 */
 		}
 
 		update = get_raw_magnetometer(&tmp_magne);
@@ -243,12 +252,12 @@ int main(void) {
 			send_magne(&tmp_magne);
 
 			/*
-			if (diff > 1) {
-				tmpOut = -32763;
-				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
-				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_magne, 6, timeout_write);
-			}
-			*/
+			 if (diff > 1) {
+			 tmpOut = -32763;
+			 SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
+			 SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_magne, 6, timeout_write);
+			 }
+			 */
 		}
 
 		elapsed = chTimeElapsedSince(start);
@@ -265,6 +274,7 @@ int main(void) {
 			for (i = 0; i < EXT_MAX_CHANNELS; i++) {
 				interruptCounter[i] = 0;
 			}
+
 			/*
 			 USBSendData((uint8_t *) "S", 1, tmo);
 			 USBSendData((uint8_t *) &event_read_gyro, 2, tmo);

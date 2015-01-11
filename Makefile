@@ -75,7 +75,6 @@ include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F3xx/port.mk
 include $(CHIBIOS)/os/kernel/kernel.mk
 include $(CHIBIOS)/driver/driver.mk
-include $(CHIBIOS)/usb/usb.mk
 include $(CHIBIOS)/static_db/static_db.mk
 include $(CHIBIOS)/dcm/dcm.mk
 include $(CHIBIOS)/my_math/my_math.mk
@@ -93,7 +92,6 @@ CSRC = $(PORTSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(DRIVERSRC) \
-       $(USBSRC) \
        $(STATICSRC) \
        $(DCMSRC) \
        $(MYMATHSRC) \
@@ -129,7 +127,7 @@ ASMSRC = $(PORTASM)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various $(STATICINC) $(DRIVERINC) $(USBINC) $(DCMINC) $(MYMATHINC) 
+         $(CHIBIOS)/os/various $(STATICINC) $(DRIVERINC) $(DCMINC) $(MYMATHINC) 
 
 #
 # Project, sources and paths
