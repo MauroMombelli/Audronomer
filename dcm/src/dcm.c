@@ -7,13 +7,15 @@
 
 #include "dcm.h"
 #include "math.h"
+#include "accelerometer.h"
+#include "magnetometer.h"
 
 /* PID factor */
 float twoKp = 2.0f * 0.5f;
 float twoKi = 2.0f * 0.0f;
 
 /* frequency of sensor reading */
-const float sample_freq = 1536/2.0;
+const float sample_freq = 355;
 
 /* Quaternion */
 //float q0 = 1, q1 = 0, q2 = 0, q3 = 0;
@@ -59,6 +61,8 @@ void dcm_step(struct vector3f g) {
 		g.x += twoKp * halfe.x;
 		g.y += twoKp * halfe.y;
 		g.z += twoKp * halfe.z;
+	}else{
+		return;
 	}
 
 	// Integrate rate of change of quaternion

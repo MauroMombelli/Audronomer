@@ -49,19 +49,19 @@ struct {
 	const uint8_t START[8];
 } commProtocol = { .START = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, .START_FREQUENCY = 1000, .packet_sent = 0 };
 /*
-void usb_init(void) {
-	sduObjectInit(&SDU1);
-	sduStart(&SDU1, &serusbcfg);
-	usbDisconnectBus(serusbcfg.usbp);
+ void usb_init(void) {
+ sduObjectInit(&SDU1);
+ sduStart(&SDU1, &serusbcfg);
+ usbDisconnectBus(serusbcfg.usbp);
 
-	chThdSleepMilliseconds(1500);
+ chThdSleepMilliseconds(1500);
 
-	usbStart(serusbcfg.usbp, &usbcfg);
-	usbConnectBus(serusbcfg.usbp);
+ usbStart(serusbcfg.usbp, &usbcfg);
+ usbConnectBus(serusbcfg.usbp);
 
-	chThdSleepMilliseconds(1500);
-}
-*/
+ chThdSleepMilliseconds(1500);
+ }
+ */
 void protocol_send_start(void) {
 	//SDU1.vmt->writet(&SDU1, commProtocol.START, sizeof(commProtocol.START), 1000);
 	//chIOPut(&SD1, i);
@@ -93,6 +93,10 @@ void send_acce(struct raw_accelerometer* tmp) {
 
 void send_magne(struct raw_magnetometer* tmp) {
 	protocol_send('m', (uint8_t *) tmp, 6);
+}
+
+void send_dcm_quaternion(union quaternion *tmp){
+	protocol_send('q', (uint8_t *) tmp, sizeof(float)*4);
 }
 
 void i2c_init(void) {
@@ -141,8 +145,8 @@ int main(void) {
 
 	//uartStart(&UARTD1, &uart_cfg_1);
 
-	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(7)); // used function : USART1_TX
-	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7)); // used function : USART1_RX
+	palSetPadMode(GPIOC, 4, PAL_MODE_ALTERNATE(7)); // used function : USART1_TX
+	palSetPadMode(GPIOC, 5, PAL_MODE_ALTERNATE(7)); // used function : USART1_RX
 
 	sdInit();
 
@@ -203,25 +207,26 @@ int main(void) {
 			g += diff;
 
 			/*
-			 if (diff > 1) {
-			 tmpOut = -32765;
-			 SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
-			 SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_gyro, 6, timeout_write);
-			 }
-			 //time to run the DCM!
-			 struct vector3f tmp;
-			 const float dps = 17.5f;
-			 const float degree_to_radiant = 0.0174532925f;
-			 tmp.x = ( (tmp_gyro.x * dps) / 1000.0 ) * degree_to_radiant;
-			 tmp.y = ( (tmp_gyro.y * dps) / 1000.0 ) * degree_to_radiant;
-			 tmp.z = ( (tmp_gyro.z * dps) / 1000.0 ) * degree_to_radiant;
-			 dcm_step(tmp);
-			 union quaternion q;
-			 dcm_get_quaternion(&q);
-			 tmpOut = -32762;
-			 SDU1.vmt->writet(&SDU1, (uint8_t * )&tmpOut, 2, timeout_write);
-			 SDU1.vmt->writet(&SDU1, (uint8_t * )&q, 16, timeout_write);
-			 */
+			if (diff > 1) {
+				tmpOut = -32765;
+				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmpOut, 2, timeout_write);
+				SDU1.vmt->writet(&SDU1, (uint8_t *) &tmp_gyro, 6, timeout_write);
+			}
+			*/
+			//time to run the DCM!
+			struct vector3f tmp;
+			const float dps = 8.75f;
+			//const float dps = 17.5f;
+			const float degree_to_radiant = 0.0174532925f;
+			tmp.x = ((tmp_gyro.x * dps) * (1/1000.0)) * degree_to_radiant;
+			tmp.y = ((tmp_gyro.y * dps) * (1/1000.0)) * degree_to_radiant;
+			tmp.z = ((tmp_gyro.z * dps) * (1/1000.0)) * degree_to_radiant;
+			dcm_step(tmp);
+			union quaternion q;
+			dcm_get_quaternion(&q);
+
+			send_dcm_quaternion(&q);
+
 		}
 
 		update = get_raw_accelerometer(&tmp_acce);
