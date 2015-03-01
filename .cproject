@@ -5,17 +5,21 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.1969954126" moduleId="org.eclipse.cdt.core.settings" name="Default">
 				<externalSettings/>
 				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.errorparsers.xlc.XlcErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 				<configuration artifactName="${ProjName}" buildProperties="" description="" id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.1969954126" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.1969954126.1582397890" name="/" resourcePath="">
-						<toolChain id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.1390317731" name="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base" superClass="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base">
+						<toolChain id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.1390317731" name="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base">
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.target.processor.4202911" name="Processor" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.target.processor"/>
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.target.architecture.1396304773" name="Architecture" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.target.architecture"/>
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.target.thumb.386919181" name="Thumb (-mthumb)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.target.thumb"/>
@@ -32,25 +36,12 @@
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.createflash.1798676829" name="Create Flash Image" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.createflash"/>
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.createlisting.1524351586" name="Create Extended Listing" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.createlisting"/>
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.printsize.1331895046" name="Print Size" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.printsize"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="org.eclipse.cdt.cross.arm.gnu.linux.platform.base.257430061" isAbstract="false" name="Linux Platform" osList="linux" superClass="org.eclipse.cdt.cross.arm.gnu.linux.platform.base"/>
-							<builder id="org.eclipse.cdt.cross.arm.gnu.linux.builder.base.5661098" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="ARM Linux GNU Make builder (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.builder.base">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="org.eclipse.cdt.cross.arm.gnu.linux.platform.base.257430061" isAbstract="false" name="Linux Platform" osList="linux"/>
+							<builder id="org.eclipse.cdt.cross.arm.gnu.linux.builder.base.5661098" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="ARM Linux GNU Make builder (GNUARM)">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name=""/>
 								</outputEntries>
 							</builder>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.assembler.base.617437607" name="ARM Linux GCC Assembler (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.assembler.base">
-								<inputType id="org.eclipse.cdt.cross.arm.gnu.linux.assembler.base.input.1527804072" superClass="org.eclipse.cdt.cross.arm.gnu.linux.assembler.base.input"/>
-							</tool>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.c.compiler.base.1113320596" name="ARM Linux GCC C Compiler (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.c.compiler.base">
-								<inputType id="org.eclipse.cdt.cross.arm.gnu.linux.c.compiler.base.input.283723186" superClass="org.eclipse.cdt.cross.arm.gnu.linux.c.compiler.base.input"/>
-							</tool>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.cpp.compiler.base.33063701" name="ARM Linux GCC C++ Compiler (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.cpp.compiler.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.c.linker.base.1367284905" name="ARM Linux GCC C Linker (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.c.linker.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.cpp.linker.base.1126654814" name="ARM Linux GCC C++ Linker (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.cpp.linker.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.archiver.base.43076251" name="ARM Linux GCC Archiver (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.archiver.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.createflash.base.324848806" name="ARM Linux GNU Create Flash Image (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.createflash.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.createlisting.base.281507561" name="ARM Linux GNU Create Listing (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.createlisting.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.printsize.base.309347948" name="ARM Linux GNU Print Size (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.printsize.base"/>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
@@ -65,17 +56,21 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.1969954126.1823635157" moduleId="org.eclipse.cdt.core.settings" name="Chibios">
 				<externalSettings/>
 				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.errorparsers.xlc.XlcErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 				<configuration artifactName="${ProjName}" buildProperties="" description="" id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.1969954126.1823635157" name="Chibios" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.1969954126.1823635157." name="/" resourcePath="">
-						<toolChain id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.499728015" name="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base" superClass="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base">
+						<toolChain id="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base.499728015" name="org.eclipse.cdt.cross.arm.gnu.linux.toolchain.base">
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.target.processor.1153737868" name="Processor" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.target.processor"/>
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.target.architecture.666286924" name="Architecture" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.target.architecture"/>
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.target.thumb.1192904480" name="Thumb (-mthumb)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.target.thumb"/>
@@ -92,29 +87,12 @@
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.createflash.589980516" name="Create Flash Image" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.createflash"/>
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.createlisting.1111167583" name="Create Extended Listing" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.createlisting"/>
 							<option id="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.printsize.2019754763" name="Print Size" superClass="org.eclipse.cdt.cross.arm.gnu.linux.option.addtools.printsize"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="org.eclipse.cdt.cross.arm.gnu.linux.platform.base.1242333857" isAbstract="false" name="Linux Platform" osList="linux" superClass="org.eclipse.cdt.cross.arm.gnu.linux.platform.base"/>
-							<builder id="org.eclipse.cdt.cross.arm.gnu.linux.builder.base.1448195878" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="ARM Linux GNU Make builder (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.builder.base">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="org.eclipse.cdt.cross.arm.gnu.linux.platform.base.1242333857" isAbstract="false" name="Linux Platform" osList="linux"/>
+							<builder id="org.eclipse.cdt.cross.arm.gnu.linux.builder.base.1448195878" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="ARM Linux GNU Make builder (GNUARM)">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name=""/>
 								</outputEntries>
 							</builder>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.assembler.base.1138094901" name="ARM Linux GCC Assembler (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.assembler.base">
-								<inputType id="org.eclipse.cdt.cross.arm.gnu.linux.assembler.base.input.241882999" superClass="org.eclipse.cdt.cross.arm.gnu.linux.assembler.base.input"/>
-							</tool>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.c.compiler.base.375288300" name="ARM Linux GCC C Compiler (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.c.compiler.base">
-								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.include.paths.689536900" name="Include paths (-I)" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/lib/gcc/arm-none-eabi/4.9.0/include/"/>
-									<listOptionValue builtIn="false" value="/usr/arm-none-eabi/include"/>
-								</option>
-								<inputType id="org.eclipse.cdt.cross.arm.gnu.linux.c.compiler.base.input.1716833488" superClass="org.eclipse.cdt.cross.arm.gnu.linux.c.compiler.base.input"/>
-							</tool>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.cpp.compiler.base.1842261071" name="ARM Linux GCC C++ Compiler (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.cpp.compiler.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.c.linker.base.227366893" name="ARM Linux GCC C Linker (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.c.linker.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.cpp.linker.base.1026053451" name="ARM Linux GCC C++ Linker (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.cpp.linker.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.archiver.base.1019571431" name="ARM Linux GCC Archiver (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.archiver.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.createflash.base.395863609" name="ARM Linux GNU Create Flash Image (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.createflash.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.createlisting.base.991205307" name="ARM Linux GNU Create Listing (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.createlisting.base"/>
-							<tool id="org.eclipse.cdt.cross.arm.gnu.linux.printsize.base.428489521" name="ARM Linux GNU Print Size (GNUARM)" superClass="org.eclipse.cdt.cross.arm.gnu.linux.printsize.base"/>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>

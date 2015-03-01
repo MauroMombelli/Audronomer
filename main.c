@@ -26,6 +26,8 @@
 
 #include "dcm.h"
 
+#include "esc_pwm.h"
+
 /* External interrupt configuration */
 EXTConfig extcfg;
 
@@ -141,6 +143,8 @@ int main(void) {
 
 	dcm_init();
 
+	pwm_init();
+
 	//usb_init();
 
 	//uartStart(&UARTD1, &uart_cfg_1);
@@ -153,7 +157,8 @@ int main(void) {
 	sdStart(&SD1, NULL);
 
 	//PREPARE LED RED
-	palSetPadMode(GPIOE, GPIOE_LED3_RED, PAL_MODE_OUTPUT_PUSHPULL);palSetPad(GPIOE, GPIOE_LED3_RED);
+	palSetPadMode(GPIOE, GPIOE_LED3_RED, PAL_MODE_OUTPUT_PUSHPULL);
+	palSetPad(GPIOE, GPIOE_LED3_RED);
 
 	/*
 	 * START READ THREAD
@@ -191,6 +196,7 @@ int main(void) {
 	uint16_t g = 0;
 	uint16_t m = 0, a = 0;
 
+	int PWMTEST = 2500;
 	while (TRUE) {
 
 		//maybe an interrupt is better :)
@@ -280,6 +286,11 @@ int main(void) {
 				interruptCounter[i] = 0;
 			}
 
+			set_pwm_motor(0, PWMTEST);
+			PWMTEST-= 200;
+			if (PWMTEST < 0){
+				PWMTEST = 2500;
+			}
 			/*
 			 USBSendData((uint8_t *) "S", 1, tmo);
 			 USBSendData((uint8_t *) &event_read_gyro, 2, tmo);
