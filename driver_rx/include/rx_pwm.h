@@ -12,18 +12,6 @@
 #include "ch.h"
 #include "hal.h"
 
-extern struct Engine{
-	GPIO_TypeDef *gpio;
-	uint8_t pin;
-
-	PWMDriver *driver;
-	pwmchannel_t channel;
-	pwmcnt_t width;
-
-	uint16_t min;
-	uint16_t max;
-}engines[];
-
 void pwm_init(void);
 void set_pwm_motor(pwmchannel_t, pwmcnt_t);
 

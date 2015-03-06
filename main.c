@@ -26,7 +26,7 @@
 
 #include "dcm.h"
 
-#include "esc_pwm.h"
+#include "driver_rx/include/rx_pwm.h"
 
 /* External interrupt configuration */
 EXTConfig extcfg;
@@ -196,7 +196,6 @@ int main(void) {
 	uint16_t g = 0;
 	uint16_t m = 0, a = 0;
 
-	int PWMTEST = 2500;
 	while (TRUE) {
 
 		//maybe an interrupt is better :)
@@ -285,21 +284,6 @@ int main(void) {
 			for (i = 0; i < EXT_MAX_CHANNELS; i++) {
 				interruptCounter[i] = 0;
 			}
-
-			set_pwm_motor(0, PWMTEST);
-			PWMTEST-= 200;
-			if (PWMTEST < 0){
-				PWMTEST = 2500;
-			}
-			/*
-			 USBSendData((uint8_t *) "S", 1, tmo);
-			 USBSendData((uint8_t *) &event_read_gyro, 2, tmo);
-			 USBSendData((uint8_t *) &event_read_acce, 2, tmo);
-			 uint16_t tmp = event_read; //should be atomic
-			 g = a = m = event_read = event_read_gyro = event_read_acce = 0;
-			 USBSendData((uint8_t *) &tmp, 2, tmo); //send number of event read
-			 */
-
 		}
 	}
 }
