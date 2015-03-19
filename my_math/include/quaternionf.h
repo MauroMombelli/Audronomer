@@ -46,7 +46,7 @@ static void transform(struct Vector3f v, struct Quaternion4f q, struct Vector3f 
 	result->z = tmp2.z;
 }
 
-struct {
+const struct {
 	void (*conjugate)(struct Quaternion4f, struct Quaternion4f*);
 	void (*multiply)(struct Quaternion4f, struct Quaternion4f, struct Quaternion4f*);
 	void (*transform)(struct Vector3f, struct Quaternion4f, struct Vector3f*);

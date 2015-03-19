@@ -41,7 +41,7 @@ static void normalize (struct Vector3f v, struct Vector3f *result){//static make
 	result->z = v.z / abs_sum;
 }
 
-struct {
+const struct {
 	void (* copy)(struct Vector3f, struct Vector3f*); //orogin, copy
 	void (* mult)(struct Vector3f, float value, struct Vector3f*); //sx, value, result
 	void (* sub)(struct Vector3f, struct Vector3f, struct Vector3f*); //sx, dx, result
