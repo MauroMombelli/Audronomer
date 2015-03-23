@@ -8,8 +8,33 @@
 #ifndef DRIVER_ESC_INCLUDE_ESC_LOGIC_H_
 #define DRIVER_ESC_INCLUDE_ESC_LOGIC_H_
 
+#include "esc_pwm.h"
 #include "vector3f.h"
 #include "quaternionf.h"
+
+const struct {
+	Vector3f engine_versor;
+	Vector3f engine_versor_orthogonal;
+	size_t ppm_channel[];
+} correctors[] = { //here there is the list of angle "correctors"
+		{ { 0, 0, 1 }, { 1, 0, 0 }, {0} }, //alettone sinistro
+		{ { 0, 0, -1 }, { 1, 0, 0 }, {1} } //alettone destro
+};
+
+const uint8_t CORRECTORS_NUMBER = sizeof(correctors) / sizeof(correctors[0]);
+
+pwmcnt_t tmp_output[CHANNEL_NUMBER];
+
+void stabilize(struct Quaternion4f dcm, Vector3f desired_angle) {
+	uint8_t i;
+	for (i = 0; i < CHANNEL_NUMBER; i++) {
+		tmp_output[i] = 0;
+	}
+
+	for (i = 0; i < CORRECTORS_NUMBER; i++) {
+		float angle = getRotationFromQuad
+	}
+}
 
 float getRotationFromQuad(struct Vector3f axis, struct Vector3f orto1, struct Quaternion4f dcm) {
 	//from http://stackoverflow.com/questions/3684269/component-of-a-quaternion-rotation-around-an-axis

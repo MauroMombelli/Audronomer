@@ -12,7 +12,7 @@
 #include "ch.h"
 #include "hal.h"
 
-extern struct Engine{
+struct PPM_Channel{
 	GPIO_TypeDef *gpio;
 	uint8_t pin;
 
@@ -22,7 +22,7 @@ extern struct Engine{
 
 	uint16_t min;
 	uint16_t max;
-}engines[];
+};
 
 void pwm_init(void);
 void set_pwm_motor(pwmchannel_t, pwmcnt_t);
