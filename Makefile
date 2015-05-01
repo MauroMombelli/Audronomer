@@ -65,20 +65,20 @@ endif
 #
 
 # Define project name here
-PROJECT = ch
+PROJECT = ChibiDrone
 
 # Imported source files and paths
-CHIBIOS = .
+CHIBIOS = ./chibios
 include $(CHIBIOS)/boards/ST_STM32F3_DISCOVERY/board.mk
 include $(CHIBIOS)/os/hal/platforms/STM32F30x/platform.mk
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F3xx/port.mk
 include $(CHIBIOS)/os/kernel/kernel.mk
-include $(CHIBIOS)/driver/driver.mk
-include $(CHIBIOS)/driver_esc/make.mk
-include $(CHIBIOS)/static_db/static_db.mk
-include $(CHIBIOS)/dcm/dcm.mk
-include $(CHIBIOS)/my_math/my_math.mk
+include ./driver/driver.mk
+include ./driver_esc/make.mk
+include ./static_db/static_db.mk
+include ./dcm/dcm.mk
+include ./my_math/my_math.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
