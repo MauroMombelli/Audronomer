@@ -24,6 +24,8 @@
 
 #include "read_thread.h"
 
+#include "esc_logic.h"
+
 #include "dcm.h"
 
 #include "driver_rx/include/rx_pwm.h"

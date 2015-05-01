@@ -1,0 +1,54 @@
+/*
+ * vector3f.h
+ *
+ *  Created on: 19/mar/2015
+ *      Author: mauro
+ */
+
+#ifndef MY_MATH_INCLUDE_VECTOR3F_H_
+#define MY_MATH_INCLUDE_VECTOR3F_H_
+
+struct Vector3f{
+	float x, y, z;
+};
+
+static void copy (struct Vector3f toClone, struct Vector3f *clone){//static make it "private"
+	clone->x = toClone.x;
+	clone->y = toClone.y;
+	clone->z = toClone.z;
+}
+
+static void mult (struct Vector3f v, float value, struct Vector3f *result){//static make it "private"
+	result->x = v.x * value;
+	result->y = v.y * value;
+	result->z = v.z * value;
+}
+
+static void sub (struct Vector3f sx, struct Vector3f dx, struct Vector3f *ris){//static make it "private"
+	ris->x = sx.x - dx.x;
+	ris->y = sx.y - dx.y;
+	ris->z = sx.z - dx.z;
+}
+
+static float dot (struct Vector3f sx, struct Vector3f dx){//static make it "private"
+	return sx.x * dx.x + sx.y * dx.y + sx.z * sx.z;
+}
+
+static void normalize (struct Vector3f v, struct Vector3f *result){//static make it "private"
+	float abs_sum = fabs(v.x+v.y+v.z);
+	result->x = v.x / abs_sum;
+	result->y = v.y / abs_sum;
+	result->z = v.z / abs_sum;
+}
+
+const struct {
+	void (* copy)(struct Vector3f, struct Vector3f*); //orogin, copy
+	void (* mult)(struct Vector3f, float value, struct Vector3f*); //sx, value, result
+	void (* sub)(struct Vector3f, struct Vector3f, struct Vector3f*); //sx, dx, result
+	float (* dot)(struct Vector3f, struct Vector3f); //result is returned!
+	void (* normalize)(struct Vector3f, struct Vector3f*);
+} vector3helper = {
+	copy, mult, sub, dot, normalize
+};
+
+#endif /* MY_MATH_INCLUDE_VECTOR3F_H_ */
