@@ -7,47 +7,56 @@
 
 #include "esc_pwm.h"
 
+/* TODO: move this things to a file witch contains the board specific configuration! */
 
-static const struct PPM_Channel channels[] = {
-	{GPIOD, 3, &PWMD2, 0, 0, 800, 1900},
-	{GPIOD, 4, &PWMD2, 1, 0, 800, 1900},
-	{GPIOD, 6, &PWMD2, 2, 0, 800, 1900},
-	{GPIOD, 7, &PWMD2, 3, 0, 800, 1900},
-};
-const uint8_t CHANNEL_NUMBER = sizeof(channels)/sizeof(channels[0]);
-
-static const PWMConfig pwmcfg2 = {
-  1000000, /* 1Mhz PWM clock frequency */
-  2500, /* PWM period 20000 tick */
-  NULL,  /* No callback */
-  /* All channel enabled */
-  {
-    {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-    {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-    {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-    {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-  },
-  0,
-  0
+static PWMConfig pwmcfg2 = {
+	1000000, /* 1Mhz PWM clock frequency */
+	2500, /* PWM period 20000 tick */
+	NULL,  /* No callback */
+	/* All channel disabled, they will be enabled at the init only if needed */
+	{
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL},
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL},
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL},
+		{PWM_OUTPUT_ACTIVE_HIGH, NULL},
+	},
+	0,
+	0
 };
 
-void pwm_init(void){
+static const struct PPM_Channel_Specific channels_hardware[] = {
+	{GPIOD, 3, &pwmcfg2, &PWMD2, PAL_MODE_ALTERNATE(2), 0},
+	{GPIOD, 4, &pwmcfg2, &PWMD2, PAL_MODE_ALTERNATE(2), 1},
+	{GPIOD, 6, &pwmcfg2, &PWMD2, PAL_MODE_ALTERNATE(2), 2},
+	{GPIOD, 7, &pwmcfg2, &PWMD2, PAL_MODE_ALTERNATE(2), 3},
+};
+/* end TODO*/
+
+/*
+ * Because channels and channels_hardware are parallel array, we MUST be sure they have the same size.
+ * And i love compile time check
+ */
+_Static_assert(sizeof(channels)/sizeof(channels[0]) == sizeof(channels_hardware)/sizeof(channels_hardware[0]), "Number of virtual channels does not match declared Hardware channels");
+
+uint8_t pwm_init(void){
 	uint8_t i;
 	for (i=0; i < CHANNEL_NUMBER; i++){
-		palSetPadMode(engines[i].gpio, engines[i].pin, PAL_MODE_ALTERNATE(2));
+		palSetPadMode(channels_hardware[i].gpio, channels_hardware[i].pin, channels_hardware[i].mode);
+		if (channels_hardware[i].driver->state != PWM_STOP){
+			pwmObjectInit(channels_hardware[i].driver);
+		}
 	}
 
-	/*TIMER 2*/
 	for (i=0; i < CHANNEL_NUMBER; i++){
-		pwmStart(channels[i].driver, &pwmcfg2);
+		if (channels_hardware[i].driver->state == PWM_STOP){
+			pwmStart(channels_hardware[i].driver, channels_hardware[i].config);
+		}
+		chDbgAssert((channels_hardware[i].config->channels[channels_hardware[i].channel].mode == PWM_OUTPUT_ACTIVE_HIGH), "drone_pwm_init(), #1", "invalid mode");
 	}
 	for (i=0; i < CHANNEL_NUMBER; i++){
-		pwmEnableChannel(channels[i].driver, channels[i].channel, pwmcfg2.frequency/2); //50%
+		pwmEnableChannel(channels_hardware[i].driver, channels_hardware[i].channel, channels_hardware[i].config->frequency/2); //50%
 	}
-}
-
-void set_pwm_to_channel(pwmchannel_t channel, pwmcnt_t width){
-	pwmEnableChannel(&PWMD2, channel, width);
+	return 0;
 }
 
 void set_pwm(uint8_t index, pwmcnt_t width){
@@ -61,5 +70,5 @@ void set_pwm(uint8_t index, pwmcnt_t width){
 
 	channels[index].width = width;
 
-	pwmEnableChannel(channels[index].driver, channels[index].channel, channels[index].width);
+	pwmEnableChannel(channels_hardware[index].driver, channels_hardware[index].channel, channels[index].width);
 }
