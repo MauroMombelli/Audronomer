@@ -5,14 +5,14 @@
  *      Author: mauro
  */
 
-#ifndef LSM303DLH_H_
-#define LSM303DLH_H_
+#ifndef LSM303DLHC_H_
+#define LSM303DLHC_H_
 
 #include "ch.h"
 #include "hal.h"
 
-#include "engine_db.h"
-#include "my_math.h"
+#include "../static_db/engine_db.h"
+#include "../my_math/my_math.h"
 
 msg_t accelerometer_init(void);
 msg_t accelerometer_read(void);

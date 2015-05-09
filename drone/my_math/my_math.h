@@ -10,15 +10,8 @@
 
 #include <math.h>
 
-struct vector3f
-{
-	float x, y, z;
-};
-
-union quaternion
-{
-    float q[4];
-};
+#include "vector3f.h"
+#include "quaternionf.h"
 
 float invSqrt(float x);
 

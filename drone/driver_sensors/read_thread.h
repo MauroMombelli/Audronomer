@@ -10,8 +10,8 @@
 
 #include <ch.h>
 
-#include "lsm303dlhc.h"
 #include "l3g4200d.h"
+#include "lsm303dlhc.h"
 
 #define EVENT_GYRO_READY 0b00000001
 #define EVENT_ACCE_READY 0b00000010
@@ -36,7 +36,8 @@ static msg_t readThread(void *arg) {
 	/*
 	 * start the sensors!
 	 */
-	gyroscope_init();
+
+
 	accelerometer_init();
 	magnetometer_init();
 

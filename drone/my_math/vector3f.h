@@ -8,6 +8,8 @@
 #ifndef MY_MATH_INCLUDE_VECTOR3F_H_
 #define MY_MATH_INCLUDE_VECTOR3F_H_
 
+#include "my_math.h"
+
 struct Vector3f{
 	float x, y, z;
 };
@@ -41,7 +43,7 @@ static void normalize (struct Vector3f v, struct Vector3f *result){//static make
 	result->z = v.z / abs_sum;
 }
 
-const struct {
+static const struct {
 	void (* copy)(struct Vector3f, struct Vector3f*); //orogin, copy
 	void (* mult)(struct Vector3f, float value, struct Vector3f*); //sx, value, result
 	void (* sub)(struct Vector3f, struct Vector3f, struct Vector3f*); //sx, dx, result

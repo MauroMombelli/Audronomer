@@ -6,9 +6,6 @@
  */
 
 #include "dcm.h"
-#include "math.h"
-#include "accelerometer.h"
-#include "magnetometer.h"
 
 /* PID factor */
 float twoKp = 2.0f * 0.5f;
@@ -19,25 +16,25 @@ const float sample_freq = 355;
 
 /* Quaternion */
 //float q0 = 1, q1 = 0, q2 = 0, q3 = 0;
-union quaternion q;
+struct Quaternion4f q;
 
 /* integral result */
-struct vector3f integralFB;
+struct Vector3f integralFB;
 
 static struct errori sensors_errors[] = { {&get_estimated_error_acce}, {&get_estimated_error_magne} };
 
 void dcm_init(){
-	q.q[0] = 1;
-	q.q[1] = q.q[2] = q.q[3] = 0;
+	q.w = 1;
+	q.x = q.y = q.z = 0;
 
 	integralFB.x = integralFB.y = integralFB.z = 0;
 }
 
-void dcm_step(struct vector3f g) {
+void dcm_step(struct Vector3f g) {
 
 	float recipNorm;
 
-	struct vector3f halfe;
+	struct Vector3f halfe;
 	halfe.x = halfe.y = halfe.z = 0;
 
 	size_t i;
@@ -71,25 +68,25 @@ void dcm_step(struct vector3f g) {
 	g.z *= (0.5f * (1.0f / sample_freq));
 
 	float qa, qb, qc;
-	qa = q.q[0];
-	qb = q.q[1];
-	qc = q.q[2];
-	q.q[0] += (-qb * g.x - qc * g.y - q.q[3] * g.z);
-	q.q[1] += (qa * g.x + qc * g.z - q.q[3] * g.y);
-	q.q[2] += (qa * g.y - qb * g.z + q.q[3] * g.x);
-	q.q[3] += (qa * g.z + qb * g.y - qc * g.x);
+	qa = q.w;
+	qb = q.x;
+	qc = q.y;
+	q.w += (-qb * g.x - qc * g.y - q.z * g.z);
+	q.x += (qa * g.x + qc * g.z - q.z * g.y);
+	q.y += (qa * g.y - qb * g.z + q.z * g.x);
+	q.z += (qa * g.z + qb * g.y - qc * g.x);
 
 	// Normalise quaternion
-	recipNorm = invSqrt(q.q[0] * q.q[0] + q.q[1] * q.q[1] + q.q[2] * q.q[2] + q.q[3] * q.q[3]);
-	q.q[0] *= recipNorm;
-	q.q[1] *= recipNorm;
-	q.q[2] *= recipNorm;
-	q.q[3] *= recipNorm;
+	recipNorm = invSqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+	q.w *= recipNorm;
+	q.x *= recipNorm;
+	q.y *= recipNorm;
+	q.z *= recipNorm;
 }
 
-void dcm_get_quaternion(union quaternion *qRis){
-	int i=0;
-	for (i=0; i<4;i++){
-		qRis->q[i] = q.q[i];
-	}
+void dcm_get_quaternion(struct Quaternion4f *qRis){
+	qRis->w = q.w;
+	qRis->x = q.x;
+	qRis->y = q.y;
+	qRis->z = q.z;
 }

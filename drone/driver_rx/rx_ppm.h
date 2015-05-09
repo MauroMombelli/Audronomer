@@ -5,14 +5,13 @@
  *      Author: mauro
  */
 
-#ifndef DRIVER_ESC_INCLUDE_ESC_PWM_H_
-#define DRIVER_ESC_INCLUDE_ESC_PWM_H_
+#ifndef DRIVER_RX_RX_PPM_H_
+#define DRIVER_RX_RX_PPM_H_
 
 
 #include "ch.h"
 #include "hal.h"
 
-void pwm_init(void);
-void set_pwm_motor(pwmchannel_t, pwmcnt_t);
+void ppm_init(void);
 
 #endif /* DRIVER_ESC_INCLUDE_ESC_PWM_H_ */

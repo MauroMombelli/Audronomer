@@ -1,34 +1,23 @@
 /*
- * esc_logic.h
+ * mixer.c
  *
- *  Created on: 16/mar/2015
+ *  Created on: 09/mag/2015
  *      Author: mauro
  */
 
-#ifndef DRIVER_ESC_INCLUDE_MIXER_H_
-#define DRIVER_ESC_INCLUDE_MIXER_H_
-
-#include "esc_pwm.h"
-#include "vector3f.h"
-#include "quaternionf.h"
+#include "mixer.h"
 
 /*
  * Here there is the array of components of the "mixer", every line is a versor influence.
  * If a channel is used multiple times, the effect stack.
  * If more channel has the same correction is good idea to add them to the array of 'ppm_channel' so the calculation wont be done multiple times.
  */
-static struct {
-	struct Vector3f engine_versor;
-	struct Vector3f engine_versor_orthogonal;
-	size_t output_channel;
-} mixer[] = {
-		{ { 0, 0, 1 }, { 1, 0, 0 }, 0 }, //alettone sinistro
-		{ { 0, 0, -1 }, { 1, 0, 0 }, 1 } //alettone destro
+struct mixer_component mixer[] = {
+	{ { 0, 0, 1 }, { 1, 0, 0 }, 0 }, //alettone sinistro
+	{ { 0, 0, -1 }, { 1, 0, 0 }, 1 } //alettone destro
 };
 
 const uint8_t MIXER_ELEMENTS = sizeof(mixer) / sizeof(mixer[0]);
-
-//static pwmcnt_t tmp_output[CHANNEL_NUMBER];
 
 float getRotationFromQuad(struct Vector3f axis, struct Vector3f orto1, struct Quaternion4f dcm) {
 	//from http://stackoverflow.com/questions/3684269/component-of-a-quaternion-rotation-around-an-axis
@@ -63,5 +52,3 @@ void doMixer(struct Quaternion4f dcm, struct Vector3f desired_angle) {
 	}
 	/* TODO: implement the desired angle from user */
 }
-
-#endif /* DRIVER_ESC_INCLUDE_MIXER_H_ */

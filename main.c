@@ -20,14 +20,11 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "engine_db.h"
+#include "drone/dcm/dcm.h"
+#include "drone/mixer/mixer.h"
+#include "drone/driver_rx/rx_ppm.h"
 
-#include "read_thread.h"
-
-#include "dcm.h"
-#include "driver_esc/include/mixer.h"
-
-#include "driver_rx/include/rx_pwm.h"
+#include "drone/driver_sensors/read_thread.h"
 
 /* External interrupt configuration */
 EXTConfig extcfg;
@@ -98,7 +95,7 @@ void send_magne(struct raw_magnetometer* tmp) {
 	protocol_send('m', (uint8_t *) tmp, 6);
 }
 
-void send_dcm_quaternion(union quaternion *tmp){
+void send_dcm_quaternion(struct Quaternion4f *tmp){
 	protocol_send('q', (uint8_t *) tmp, sizeof(float)*4);
 }
 
@@ -220,7 +217,7 @@ int main(void) {
 			}
 			*/
 			//time to run the DCM!
-			struct vector3f tmp;
+			struct Vector3f tmp;
 			const float dps = 8.75f;
 			//const float dps = 17.5f;
 			const float degree_to_radiant = 0.0174532925f;
@@ -228,11 +225,13 @@ int main(void) {
 			tmp.y = ((tmp_gyro.y * dps) * (1/1000.0)) * degree_to_radiant;
 			tmp.z = ((tmp_gyro.z * dps) * (1/1000.0)) * degree_to_radiant;
 			dcm_step(tmp);
-			union quaternion q;
+			struct Quaternion4f q;
 			dcm_get_quaternion(&q);
 
 			send_dcm_quaternion(&q);
 
+			struct Vector3f desired = {0,0,0};
+			doMixer(q, desired);
 		}
 
 		update = get_raw_accelerometer(&tmp_acce);
@@ -252,8 +251,6 @@ int main(void) {
 			 }
 			 */
 		}
-
-		update = get_raw_magnetometer(&tmp_magne);
 
 		diff = update - lastUpdateM;
 		if (diff) {

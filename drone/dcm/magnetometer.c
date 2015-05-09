@@ -1,13 +1,20 @@
-#include "math.h"
+/*
+ * magnetometer.c
+ *
+ *  Created on: 09/mag/2015
+ *      Author: mauro
+ */
 
-struct vector3f zero_magne = { 0, 0, 0 };
+#include "magnetometer.h"
+
+struct Vector3f zero_magne = { 0, 0, 0 };
 uint8_t last_update_m = 0;
 
-void get_estimated_error_magne(union quaternion q, struct vector3f *ris) {
+void get_estimated_error_magne(struct Quaternion4f q, struct Vector3f *ris) {
 	struct raw_magnetometer tmpM;
 	uint8_t update = get_raw_magnetometer(&tmpM);
 	//to float
-	struct vector3f tmp;
+	struct Vector3f tmp;
 	tmp.x = tmpM.x - zero_magne.x;
 	tmp.y = tmpM.y - zero_magne.y;
 	tmp.z = tmpM.z - zero_magne.z;
@@ -25,15 +32,15 @@ void get_estimated_error_magne(union quaternion q, struct vector3f *ris) {
 		tmp.z *= recipNorm;
 
 		// Reference direction of Earth's magnetic field
-		hx = 2.0f * (tmp.x * (0.5f - q.q[2] * q.q[2] - q.q[3] * q.q[3]) + tmp.y * (q.q[1] * q.q[2] - q.q[0] * q.q[3]) + tmp.z * (q.q[1] * q.q[3] + q.q[0] * q.q[2]));
-		hy = 2.0f * (tmp.x * (q.q[1] * q.q[2] + q.q[0] * q.q[3]) + tmp.y * (0.5f - q.q[1] * q.q[1] - q.q[3] * q.q[3]) + tmp.z * (q.q[2] * q.q[3] - q.q[0] * q.q[1]));
+		hx = 2.0f * (tmp.x * (0.5f - q.y * q.y - q.z * q.z) + tmp.y * (q.x * q.y - q.w * q.z) + tmp.z * (q.x * q.z + q.w * q.y));
+		hy = 2.0f * (tmp.x * (q.x * q.y + q.w * q.z) + tmp.y * (0.5f - q.x * q.x - q.z * q.z) + tmp.z * (q.y * q.z - q.w * q.x));
 		bx = sqrtf(hx * hx + hy * hy);
-		bz = 2.0f * (tmp.x * (q.q[1] * q.q[3] - q.q[0] * q.q[2]) + tmp.y * (q.q[2] * q.q[3] + q.q[0] * q.q[1]) + tmp.z * (0.5f - q.q[1] * q.q[1] - q.q[2] * q.q[2]));
+		bz = 2.0f * (tmp.x * (q.x * q.z - q.w * q.y) + tmp.y * (q.y * q.z + q.w * q.x) + tmp.z * (0.5f - q.x * q.x - q.y * q.y));
 
 		// Estimated direction of magnetic field
-		halfwx = bx * (0.5f - q.q[2] * q.q[2] - q.q[3] * q.q[3]) + bz * (q.q[1] * q.q[3] - q.q[0] * q.q[2]);
-		halfwy = bx * (q.q[1] * q.q[2] - q.q[0] * q.q[3]) + bz * (q.q[0] * q.q[1] + q.q[2] * q.q[3]);
-		halfwz = bx * (q.q[0] * q.q[2] + q.q[1] * q.q[3]) + bz * (0.5f - q.q[1] * q.q[1] - q.q[2] * q.q[2]);
+		halfwx = bx * (0.5f - q.y * q.y - q.z * q.z) + bz * (q.x * q.z - q.w * q.y);
+		halfwy = bx * (q.x * q.y - q.w * q.z) + bz * (q.w * q.x + q.y * q.z);
+		halfwz = bx * (q.w * q.y + q.x * q.z) + bz * (0.5f - q.x * q.x - q.y * q.y);
 
 		// Normalize estimated reference field
 		float norm = invSqrt(halfwx * halfwx + halfwy * halfwy + halfwz * halfwz);

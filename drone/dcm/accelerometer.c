@@ -1,13 +1,20 @@
-#include "math.h"
+/*
+ * accelerometer.c
+ *
+ *  Created on: 09/mag/2015
+ *      Author: mauro
+ */
 
-struct vector3f zero_acce = {-4089.385,5226.89,7490.706666666667};
+#include "accelerometer.h"
+
+struct Vector3f zero_acce = {-4089.385,5226.89,7490.706666666667};
 uint8_t last_update_a=0;
 
-void get_estimated_error_acce(union quaternion q, struct vector3f *ris) {
+void get_estimated_error_acce(struct Quaternion4f q, struct Vector3f *ris) {
 	struct raw_accelerometer tmpA;
 	uint8_t update = get_raw_accelerometer(&tmpA);
 	//to float
-	struct vector3f tmp;
+	struct Vector3f tmp;
 	tmp.x = tmpA.x - zero_acce.x;
 	tmp.y = tmpA.y - zero_acce.y;
 	tmp.z = tmpA.z - zero_acce.z;
@@ -24,9 +31,9 @@ void get_estimated_error_acce(union quaternion q, struct vector3f *ris) {
 		tmp.z *= recipNorm;
 
 		// Estimated direction of gravity
-		halfvx = q.q[1] * q.q[3] - q.q[0] * q.q[2];
-		halfvy = q.q[0] * q.q[1] + q.q[2] * q.q[3];
-		halfvz = q.q[0] * q.q[0] - 0.5f + q.q[3] * q.q[3];
+		halfvx = q.x * q.z - q.w * q.y;
+		halfvy = q.w * q.x + q.y * q.z;
+		halfvz = q.w * q.w - 0.5f + q.z * q.z;
 
 		// Error is sum of cross product between estimated direction and measured direction of field vectors
 		ris->x += (tmp.y * halfvz - tmp.z * halfvy);

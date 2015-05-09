@@ -74,11 +74,11 @@ include $(CHIBIOS)/os/hal/platforms/STM32F30x/platform.mk
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F3xx/port.mk
 include $(CHIBIOS)/os/kernel/kernel.mk
-include ./driver/driver.mk
-include ./driver_esc/make.mk
-include ./static_db/static_db.mk
-include ./dcm/dcm.mk
-include ./my_math/my_math.mk
+#include ./driver/driver.mk
+#include ./driver_esc/make.mk
+#include ./static_db/static_db.mk
+#include ./dcm/dcm.mk
+#include ./my_math/my_math.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
@@ -86,13 +86,24 @@ LDSCRIPT= $(PORTLD)/STM32F303xC.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
+SOURCES = drone
+#CSRC = $(wildcard ./drone/*.c)
 CSRC = $(PORTSRC) \
        $(KERNSRC) \
        $(TESTSRC) \
        $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
-       $(DRIVERSRC) \
+       $(wildcard drone/driver_sensors/*.c) \
+       $(wildcard drone/driver_rx/*.c) \
+       $(wildcard drone/driver_esc/*.c) \
+       $(wildcard drone/dcm/*.c) \
+       $(wildcard drone/my_math/*.c) \
+       $(wildcard drone/static_db/*.c) \
+       $(wildcard drone/mixer/*.c) \
+       main.c 
+       #$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+ #      $(DRIVERSRC) \
        $(STATICSRC) \
        $(DCMSRC) \
        $(MYMATHSRC) \
@@ -129,7 +140,7 @@ ASMSRC = $(PORTASM)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various $(STATICINC) $(DRIVERINC) $(DRIVERESCINC) $(DCMINC) $(MYMATHINC) 
+         $(CHIBIOS)/os/various 
 
 #
 # Project, sources and paths
