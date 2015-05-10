@@ -232,6 +232,7 @@ int main(void) {
 
 			struct Vector3f desired = {0,0,0};
 			doMixer(q, desired);
+
 		}
 
 		update = get_raw_accelerometer(&tmp_acce);
