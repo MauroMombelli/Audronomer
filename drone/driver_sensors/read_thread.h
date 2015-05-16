@@ -37,7 +37,6 @@ static msg_t readThread(void *arg) {
 	 * start the sensors!
 	 */
 
-
 	accelerometer_init();
 	magnetometer_init();
 

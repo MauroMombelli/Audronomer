@@ -8,17 +8,13 @@
 #ifndef DCM_H_
 #define DCM_H_
 
-//#include "../../driver_sensors/lsm303dlhc.h"
+#include "my_math/my_math.h"
+#include "estimators/accelerometer.h"
+#include "estimators/magnetometer.h"
 
-#include "ch.h"
-#include "hal.h"
-
-#include "../my_math/my_math.h"
-#include "accelerometer.h"
-#include "magnetometer.h"
-
-struct errori{
-	void (*get_estimated_error)(struct Quaternion4f, struct Vector3f*);
+struct error_estimator{
+	uint8_t (*get_raw_data)(struct Vector3f*);
+	void (*get_estimated_error)(struct Quaternion4f, struct Vector3f*, struct Vector3f);
 };
 
 void dcm_init(void);

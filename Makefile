@@ -94,13 +94,7 @@ CSRC = $(PORTSRC) \
        $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
-       $(wildcard drone/driver_sensors/*.c) \
-       $(wildcard drone/driver_rx/*.c) \
-       $(wildcard drone/driver_esc/*.c) \
-       $(wildcard drone/dcm/*.c) \
-       $(wildcard drone/my_math/*.c) \
-       $(wildcard drone/static_db/*.c) \
-       $(wildcard drone/mixer/*.c) \
+       SOURCE=$(shell find ./drone -follow -name "*.c") \
        main.c 
        #$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
  #      $(DRIVERSRC) \
@@ -218,7 +212,7 @@ UDEFS =
 UADEFS =
 
 # List all user directories here
-UINCDIR =
+UINCDIR = ./drone
 
 # List the user directory to look for the libraries here
 ULIBDIR =

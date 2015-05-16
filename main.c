@@ -14,17 +14,14 @@
  limitations under the License.
  */
 
-#include <stdlib.h>
-#include <inttypes.h>
-
 #include "ch.h"
 #include "hal.h"
 
-#include "drone/dcm/dcm.h"
-#include "drone/mixer/mixer.h"
-#include "drone/driver_rx/rx_ppm.h"
+#include "dcm/dcm.h"
+#include "mixer/mixer.h"
+#include "driver_rx/rx_ppm.h"
 
-#include "drone/driver_sensors/read_thread.h"
+#include "driver_sensors/read_thread.h"
 
 /* External interrupt configuration */
 EXTConfig extcfg;

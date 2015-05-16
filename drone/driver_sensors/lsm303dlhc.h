@@ -11,8 +11,8 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "../static_db/engine_db.h"
-#include "../my_math/my_math.h"
+#include "static_db/engine_db.h"
+#include "my_math/my_math.h"
 
 msg_t accelerometer_init(void);
 msg_t accelerometer_read(void);
