@@ -8,10 +8,12 @@
 #ifndef READ_THREAD_H_
 #define READ_THREAD_H_
 
-#include <ch.h>
+#include "my_math/my_math.h"
 
-#include "l3g4200d.h"
-#include "lsm303dlhc.h"
+#include "struct.h"
+
+#include "driver_sensors/l3g4200d.h"
+#include "driver_sensors/lsm303dlhc.h"
 
 #define EVENT_GYRO_READY 0b00000001
 #define EVENT_ACCE_READY 0b00000010
@@ -27,6 +29,8 @@ static volatile uint16_t event_read_acce = 0;
 static volatile uint16_t event_read_gyro = 0;
 static volatile uint16_t event_read_magn = 0;
 
+static struct sensors_data sensor_data;
+
 static Thread *readThreadPointer;
 /*
  * read thread. This thread's heart beat LED is RED
@@ -40,12 +44,10 @@ static msg_t readThread(void *arg) {
 	accelerometer_init();
 	magnetometer_init();
 
-	magnetometer_read();
-	gyroscope_read();
-	accelerometer_read();
 
-	//systime_t start = 0;
-	//systime_t counteg;
+	gyroscope_read(&sensor_data.gyro);
+	accelerometer_read(&sensor_data.acce);
+	magnetometer_read(&sensor_data.magne);
 
 	while (TRUE) {
 
@@ -60,18 +62,18 @@ static msg_t readThread(void *arg) {
 		if ( (event & (EVENT_ACCE_READY) ) != 0) {
 			//TODO: why accelerometer does not work with its interrupt?
 			//TODO: debug
-			//accelerometer_read();
+			//accelerometer_read(&sensor_data.acce);
 		}
 
 		if ( (event & EVENT_MAGN_READY) != 0 ){
 			//TODO: debug
-			magnetometer_read();
+			magnetometer_read(&sensor_data.magne);
 		}
 
 		if ( (event & EVENT_GYRO_READY) != 0) {
-			gyroscope_read();
+			gyroscope_read(&sensor_data.gyro);
 			//TODO: why accelerometer does not work with its interrupt?
-			accelerometer_read();
+			accelerometer_read(&sensor_data.acce);
 		}
 	}
 	/* WHAT?! should NEVER be HERE! */

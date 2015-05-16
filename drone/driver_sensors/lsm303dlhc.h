@@ -11,17 +11,16 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "static_db/engine_db.h"
 #include "my_math/my_math.h"
 
 msg_t accelerometer_init(void);
-msg_t accelerometer_read(void);
+msg_t accelerometer_read(struct Vector3i16*);
 
 uint8_t accelerometer_interrupt_mode(void);
 uint8_t accelerometer_interrutp_port(void);
 uint8_t accelerometer_ext_pin(void);
 
 msg_t magnetometer_init(void);
-msg_t magnetometer_read(void);
+msg_t magnetometer_read(struct Vector3i16*);
 
 #endif /* LSM303DLH_H_ */

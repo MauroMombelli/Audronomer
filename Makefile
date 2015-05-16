@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O0 -g3 -std=gnu11 -ggdb -fomit-frame-pointer -falign-functions=16 -lm
+  USE_OPT = -O0 -g3 -std=gnu11 -ggdb -Wall -Wextra -fomit-frame-pointer -falign-functions=16 -lm
 endif
 
 # C specific options here (added to USE_OPT).

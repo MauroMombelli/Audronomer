@@ -24,19 +24,19 @@ float getRotationFromQuad(struct Vector3f axis, struct Vector3f orto1, struct Qu
 
 	struct Vector3f tmp;
 
-	vector3helper.copy(&orto1, &tmp); //copy orto1 to tmp
+	vector3f_helper.copy(&orto1, &tmp); //copy orto1 to tmp
 
 	quaterionf_helper.transform(&tmp, &dcm, &tmp); //rotate tmp with dmc
 
-	float dot_ris = vector3helper.dot(&tmp, &axis); //dot product of tmp and axis
+	float dot_ris = vector3f_helper.dot(&tmp, &axis); //dot product of tmp and axis
 
-	vector3helper.mult(&axis, dot_ris, &axis); //mult axis by dot_ris, result stored it into axis
+	vector3f_helper.mult(&axis, dot_ris, &axis); //mult axis by dot_ris, result stored it into axis
 
-	vector3helper.sub(&tmp, &axis, &tmp); //subtract axis from tmp, store in tmp
+	vector3f_helper.sub(&tmp, &axis, &tmp); //subtract axis from tmp, store in tmp
 
-	vector3helper.normalize(&tmp, &tmp);
+	vector3f_helper.normalize(&tmp, &tmp);
 
-	return acos(vector3helper.dot(&orto1, &tmp));
+	return acos(vector3f_helper.dot(&orto1, &tmp));
 }
 
 void doMixer(struct Quaternion4f dcm, struct Vector3f desired_angle) {

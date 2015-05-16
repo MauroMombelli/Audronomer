@@ -1,30 +1,22 @@
 #ifndef ENGINE_DB_H_
 #define ENGINE_DB_H_
 
-#include "ch.h"
-#include "hal.h"
+#include <stdint.h>
+#include <stddef.h>
 
-#include "struct.h"
+#include "custom/struct.h"
 
-void init_static_generics(void);
+extern void init_static_generics(void);
 
-void my_memcpy(void * destination, void * source, size_t size );
+extern void my_memcpy(void * destination, void * source, size_t size );
 
 /* this macro will create the right X macro element, and also initiliaze the "anonymous" struct */
-#define ADD_STRUCT_TO_ARRAY(xu) X(xu, &(struct xu){0})SEP
+#define ADD_STRUCT_TO_ARRAY(xu) X(xu, (uint8_t[sizeof(struct xu)]){0} )SEP
 
 /* here we initialize the enum, where the type of the struct is the key, and the value its position in the array */
 #define SEP ,
 #define X(a,b) a
 enum STRUCT {
-	#include "array_initialization.h"
-};
-#undef X
-
-/* here we initalize the array of structure */
-#define X(a,b) b
-static void * const generic[] =
-{
 	#include "array_initialization.h"
 };
 #undef X

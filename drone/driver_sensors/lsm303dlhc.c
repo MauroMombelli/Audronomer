@@ -18,10 +18,7 @@ static const int LSM_ADDR_MAG = 0x1E;
 
 msg_t accelerometer_init(void) {
 	//acc
-	uint8_t buffer_tx[] = { 0x20, 0x77,
-			0x22, 0x04,
-			0x23, 0x02,
-			0x2E, 0x20, //2g, high resolution
+	uint8_t buffer_tx[] = { 0x20, 0x77, 0x22, 0x04, 0x23, 0x02, 0x2E, 0x20, //2g, high resolution
 			0x25, 0x08 };
 
 	systime_t tmo = MS2ST(4);
@@ -35,7 +32,8 @@ msg_t accelerometer_init(void) {
 
 	//Configure Accelerometer
 	for (i = 0; i < sizeof(buffer_tx) / 2; i++) {
-		ris |= i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_ACC, buffer_tx + i * 2, 2, NULL, 0, tmo);
+		ris |= i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_ACC, buffer_tx + i * 2,
+				2, NULL, 0, tmo);
 	}
 
 	i2cStop(&I2CD1);
@@ -44,7 +42,7 @@ msg_t accelerometer_init(void) {
 	return ris;
 }
 
-msg_t accelerometer_read(void) {
+msg_t accelerometer_read(struct Vector3i16 *tmp) {
 
 	msg_t status;
 
@@ -55,20 +53,17 @@ msg_t accelerometer_read(void) {
 
 	i2cAcquireBus(&I2CD1);
 	i2cStart(&I2CD1, &i2cconfig);
-	status = i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_ACC, &buffer_tx, 1, buffer_rx, sizeof(buffer_rx), tmo); //please, sizeof works only on array, never use with pointer, even if pointing array
+	status = i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_ACC, &buffer_tx, 1,
+			buffer_rx, sizeof(buffer_rx), tmo); //please, sizeof works only on array, never use with pointer, even if pointing array
 	i2cStop(&I2CD1);
 	i2cReleaseBus(&I2CD1);
 
 	//buffer_rx[0] contains data ready bit
 	if (status == RDY_OK && (buffer_rx[0] & 0x8)) {
-		struct raw_accelerometer tmp;
-
 		//we use gyro as reference, deal with it!
-		tmp.y = -((int16_t) ((uint16_t) buffer_rx[2] << 8) + buffer_rx[1]);
-		tmp.x = ((int16_t) ((uint16_t) buffer_rx[4] << 8) + buffer_rx[3]);
-		tmp.z = ((int16_t) ((uint16_t) buffer_rx[6] << 8) + buffer_rx[5]);
-
-		put_raw_accelerometer(&tmp);
+		tmp->y = -((int16_t)((uint16_t) buffer_rx[2] << 8) + buffer_rx[1]);
+		tmp->x = ((int16_t)((uint16_t) buffer_rx[4] << 8) + buffer_rx[3]);
+		tmp->z = ((int16_t)((uint16_t) buffer_rx[6] << 8) + buffer_rx[5]);
 
 		return RDY_OK;
 	} else {
@@ -101,7 +96,8 @@ msg_t magnetometer_init(void) {
 
 	// Configure Magnetometer
 	for (i = 0; i < sizeof(buffer_tx_mag) / 2; i++) {
-		ris |= i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_MAG, buffer_tx_mag + i * 2, 2, NULL, 0, tmo);
+		ris |= i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_MAG,
+				buffer_tx_mag + i * 2, 2, NULL, 0, tmo);
 	}
 	i2cStop(&I2CD1);
 	i2cReleaseBus(&I2CD1);
@@ -109,7 +105,7 @@ msg_t magnetometer_init(void) {
 	return ris;
 }
 
-msg_t magnetometer_read(void) {
+msg_t magnetometer_read(struct Vector3i16 *tmp) {
 	uint8_t buffer_rx[7];
 	uint8_t buffer_tx = 0x03;
 	msg_t status;
@@ -119,29 +115,22 @@ msg_t magnetometer_read(void) {
 	i2cStart(&I2CD1, &i2cconfig);
 	i2cAcquireBus(&I2CD1);
 
-	status = i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_MAG, &buffer_tx, 1, buffer_rx, 7, tmo);
+	status = i2cMasterTransmitTimeout(&I2CD1, LSM_ADDR_MAG, &buffer_tx, 1,
+			buffer_rx, 7, tmo);
 
 	i2cReleaseBus(&I2CD1);
 	i2cStop(&I2CD1);
 
 	//buffer_rx[6] ontains data ready bit
 	if (status == RDY_OK /*&& (buffer_rx[6] & 0x1) */) { //does not seems to work
-		struct raw_magnetometer tmp;
 
-		tmp.y = -((int16_t) ((uint16_t) buffer_rx[0] << 8) + buffer_rx[1]);
+		tmp->y = -((int16_t)((uint16_t) buffer_rx[0] << 8) + buffer_rx[1]);
 		//z axes is in different register order tha others sensors, AND use different gain. fuck that, and this, and that too.
-		tmp.z = ((int16_t) ((uint16_t) buffer_rx[2] << 8) + buffer_rx[3])*1.12f;
-		tmp.x = ((int16_t) ((uint16_t) buffer_rx[4] << 8) + buffer_rx[5]);
-
-		put_raw_magnetometer(&tmp);
-		/*
-		 values[0] = ((int16_t)((uint16_t)buffer_rx[0] << 8) + buffer_rx[1]);
-		 values[2] = ((int16_t)((uint16_t)buffer_rx[2] << 8) + buffer_rx[3]);
-		 values[1] = ((int16_t)((uint16_t)buffer_rx[4] << 8) + buffer_rx[5]);
-		 */
+		tmp->z = ((int16_t)((uint16_t) buffer_rx[2] << 8) + buffer_rx[3])
+				* 1.12f;
+		tmp->x = ((int16_t)((uint16_t) buffer_rx[4] << 8) + buffer_rx[5]);
+		return RDY_OK;
 	} else {
-		//values[0] = values[1] = values[2] = 0;
+		return RDY_RESET;
 	}
-
-	return status;
 }
