@@ -10,6 +10,7 @@
 
 #include "my_math.h"
 
+
 struct Vector3f{
 	float x, y, z;
 };
@@ -49,7 +50,7 @@ static const struct {
 	void (* sub)(const struct Vector3f*, const struct Vector3f*, struct Vector3f*); /* sx, dx, result */
 	float (* dot)(const struct Vector3f*, const struct Vector3f*); /* result is returned! */
 	void (* normalize)(const struct Vector3f*, struct Vector3f*);
-} vector3helper = {
+} vector3f_helper = {
 	copy, mult, sub, dot, normalize
 };
 

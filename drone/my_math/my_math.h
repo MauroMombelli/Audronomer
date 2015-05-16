@@ -13,6 +13,7 @@
 #include <math.h>
 
 #include "vector3f.h"
+#include "vector3i16.h"
 #include "quaternionf.h"
 
 float invSqrt(float x);
