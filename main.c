@@ -18,9 +18,8 @@
 #include "hal.h"
 
 #include "dcm/dcm.h"
+#include "driver/reciver/rx_ppm.h"
 #include "mixer/mixer.h"
-#include "driver_rx/rx_ppm.h"
-
 #include "sensors_thread/read_thread.h"
 
 #include "static_db/engine_db.h"

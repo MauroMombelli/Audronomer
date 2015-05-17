@@ -5,7 +5,7 @@
  *      Author: mauro
  */
 
-#include "esc_pwm.h"
+#include "../esc/esc_pwm.h"
 
 /* TODO: move this things to a file witch contains the board specific configuration! */
 

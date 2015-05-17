@@ -5,7 +5,7 @@
  *      Author: mauro
  */
 
-#include "lsm303dlhc.h"
+#include "../sensors/lsm303dlhc.h"
 
 static const I2CConfig i2cconfig = { 0x00902025, //from lsm303dlhc.c
 		0, 0 };

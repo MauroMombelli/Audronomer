@@ -5,7 +5,7 @@
  *      Author: mauro
  */
 
-#include "rx_ppm.h"
+#include "../reciver/rx_ppm.h"
 
 void ppm_init(void){
 	/*

@@ -5,7 +5,7 @@
  *      Author: mauro
  */
 
-#include "l3g4200d.h"
+#include "../sensors/l3g4200d.h"
 
 static const SPIConfig spi1cfg = { NULL,
 /* HW dependent part.*/
