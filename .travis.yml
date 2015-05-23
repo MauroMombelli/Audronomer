@@ -7,3 +7,5 @@ install:
   - sudo apt-get update
   - sudo apt-get install gcc-arm-none-eabi
   - arm-none-eabi-gcc --version ;
+
+script: make all
