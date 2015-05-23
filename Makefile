@@ -88,13 +88,15 @@ LDSCRIPT= $(PORTLD)/STM32F303xC.ld
 # setting.
 SOURCES = drone
 #CSRC = $(wildcard ./drone/*.c)
+DRIVERS = driver
 CSRC = $(PORTSRC) \
        $(KERNSRC) \
        $(TESTSRC) \
        $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
-       SOURCE=$(shell find ./drone -follow -name "*.c") \
+       $(shell find $(DRIVERS) -follow -name "*.c") \
+       $(shell find $(SOURCES) -follow -name "*.c") \
        main.c 
        #$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
  #      $(DRIVERSRC) \

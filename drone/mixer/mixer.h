@@ -8,7 +8,7 @@
 #ifndef DRONE_MIXER_MIXER_H_
 #define DRONE_MIXER_MIXER_H_
 
-#include "driver_esc/esc_pwm.h"
+#include "driver/esc/esc_pwm.h"
 #include "my_math/my_math.h"
 
 
