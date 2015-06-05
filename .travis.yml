@@ -1,6 +1,8 @@
 # We use c for the main project.
 language: c
-compiler: gcc
+compiler: 
+  - gcc
+  - clang
 
 install: 
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
