@@ -8,10 +8,10 @@
 #ifndef LSM303DLHC_H_
 #define LSM303DLHC_H_
 
+#include "../../Dependencies/TrigonomeC/my_math.h"
 #include "ch.h"
 #include "hal.h"
 
-#include "my_math/my_math.h"
 
 msg_t accelerometer_init(void);
 msg_t accelerometer_read(struct Vector3i16*);

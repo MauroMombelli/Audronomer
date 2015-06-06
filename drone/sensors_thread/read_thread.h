@@ -8,7 +8,7 @@
 #ifndef READ_THREAD_H_
 #define READ_THREAD_H_
 
-#include "my_math/my_math.h"
+#include "TrigonomeC/my_math.h"
 
 #include "struct.h"
 

@@ -11,7 +11,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "my_math/my_math.h"
+#include "TrigonomeC/my_math.h"
 
 msg_t gyroscope_init(void);
 msg_t gyroscope_read(struct Vector3f*);

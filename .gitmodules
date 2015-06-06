@@ -1,3 +1,9 @@
 [submodule "chibios"]
 	path = chibios
 	url = https://github.com/ChibiOS/ChibiOS.git
+[submodule "Dependenies/TrigonomeC"]
+	path = Dependenies/TrigonomeC
+	url = https://github.com/MauroMombelli/TrigonomeC.git
+[submodule "Dependenies/FreeDCM"]
+	path = Dependenies/FreeDCM
+	url = https://github.com/MauroMombelli/FreeDCM.git

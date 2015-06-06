@@ -2,7 +2,7 @@
 #ifndef SENSOR_READ_STRUCT_H
 #define SENSOR_READ_STRUCT_H
 
-#include "my_math/my_math.h"
+#include "TrigonomeC/my_math.h"
 
 struct sensors_data {
 	struct Vector3f gyro;

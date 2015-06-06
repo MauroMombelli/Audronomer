@@ -9,7 +9,7 @@
 #define DRONE_MIXER_MIXER_H_
 
 #include "driver/esc/esc_pwm.h"
-#include "my_math/my_math.h"
+#include "TrigonomeC/my_math.h"
 
 
 struct mixer_component{

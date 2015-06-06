@@ -17,7 +17,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "dcm/dcm.h"
+#include "FreeDCM/dcm.h"
 #include "driver/reciver/rx_ppm.h"
 #include "mixer/mixer.h"
 #include "sensors_thread/read_thread.h"

@@ -86,9 +86,10 @@ LDSCRIPT= $(PORTLD)/STM32F303xC.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
+
 SOURCES = drone
-#CSRC = $(wildcard ./drone/*.c)
 DRIVERS = driver
+DEPENDENCIES = Dependencies
 CSRC = $(PORTSRC) \
        $(KERNSRC) \
        $(TESTSRC) \
@@ -97,6 +98,7 @@ CSRC = $(PORTSRC) \
        $(BOARDSRC) \
        $(shell find $(DRIVERS) -follow -name "*.c") \
        $(shell find $(SOURCES) -follow -name "*.c") \
+       $(shell find $(DEPENDENCIES) -follow -name "*.c") \
        main.c 
        #$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
  #      $(DRIVERSRC) \
@@ -136,7 +138,7 @@ ASMSRC = $(PORTASM)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various 
+         $(CHIBIOS)/os/various
 
 #
 # Project, sources and paths
@@ -214,7 +216,7 @@ UDEFS =
 UADEFS =
 
 # List all user directories here
-UINCDIR = ./drone
+UINCDIR = ./drone ./Dependencies
 
 # List the user directory to look for the libraries here
 ULIBDIR =
