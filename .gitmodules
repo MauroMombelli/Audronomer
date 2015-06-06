@@ -7,3 +7,9 @@
 [submodule "Dependenies/FreeDCM"]
 	path = Dependenies/FreeDCM
 	url = https://github.com/MauroMombelli/FreeDCM.git
+[submodule "Dependencies/FreeDCM"]
+	path = Dependencies/FreeDCM
+	url = https://github.com/MauroMombelli/FreeDCM.git
+[submodule "Dependencies/TrigonomeC"]
+	path = Dependencies/TrigonomeC
+	url = https://github.com/MauroMombelli/TrigonomeC.git
