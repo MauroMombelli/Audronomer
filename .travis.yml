@@ -1,6 +1,8 @@
 # We use c for the main project.
 language: c
-compiler: gcc
+compiler: 
+  - gcc
+  - clang
 
 install: 
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
@@ -9,3 +11,18 @@ install:
   - arm-none-eabi-gcc --version ;
 
 script: make all
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "QN+3Km7J5tjAWv9OmMKjEHtcZmwpV0FDY6u+cJ18bAxesJnaVUY9pFq6wgGyTtlerBA9y3QyyV82RHNYtY49a/QGIj0v5hYyLHm6dQL5ImjEmWo27RzQ7aP9V8l0NeoepZnufLcgLDD2mOy1x0oLHje9Xx9hJUPFmXbvHRaaZ08="
+
+addons:
+  coverity_scan:
+    project:
+      name: "MauroMombelli/Audronomer"
+      description: "<Your project description here>"
+    build_command_prepend: ""
+    build_command:   "make"
+    branch_pattern: master
