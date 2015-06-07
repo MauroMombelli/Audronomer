@@ -1,8 +1,7 @@
-# We use c for the main project.
+# We force the use of arm-none-eabi-gcc in makefile, this compiler setting is fake
 language: c
 compiler: 
   - gcc
-  - clang
 
 install: 
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
